@@ -107,32 +107,39 @@ deterministic; `tests/test_pipeline.py` guards it).
 
 ### 2. LLM-written claims — `results/llm_eval*.json`, `results/llm_claims*.csv`
 
-LLM analysts (`agents/llm_analysts.py`, local `mistral` 7B via Ollama) write
-free-form research sentences from retrieved evidence; the same Verification Agent
-checks them. Nobody injected these errors.
+LLM analysts (`agents/llm_analysts.py`) write free-form research sentences from
+retrieved evidence; the same Verification Agent checks them. Nobody injected these
+errors. Two models, five runs each × three companies:
 
-Five sampling seeds × three companies, 267 claims (`results/llm_eval_summary.json`):
+| | Mistral 7B (local, Ollama) | `gpt-oss-120b` (Groq) |
+|---|---|---|
+| Claims | 267 | 221 |
+| Withheld on first pass | 28 (10.5 %) | 1 (0.5 %) |
+| – direction contradicted by raw prices | 21 (28 % of 74 technical claims) | 0 |
+| – a number not in the evidence / recomputation | 6 | 1 |
+| – weak semantic support | 1 | 0 |
+| Wrong number per a structured oracle | 3, all withheld | 0 |
+| Revisions attempted → successful | 30 → 26 | 1 → 1 |
 
-| | |
-|---|---|
-| Claims withheld on first pass | 27 (10.1 %) |
-| – direction contradicted by raw prices | 21 (28 % of the 74 technical claims) |
-| – a number not in the evidence / recomputation | 5 |
-| – weak semantic support | 1 |
-| Claims with a wrong number per a structured oracle | 3 — all withheld |
-| Revisions attempted → successful | 30 → 24 |
+Summaries: `results/llm_eval_summary.json`, `results/groq_llm_eval_summary.json`.
 
-The model almost never gets a *number* wrong when it has the evidence in front of
-it; it often gets a *direction* wrong ("price below the 20-day average" when it is
-above). Those are the errors the directional checks catch.
+Both models almost never get a *number* wrong when the evidence is in front of them.
+The small model often gets a *direction* wrong ("price below the 20-day average" when
+it is above); those are the errors the directional checks catch. The large model
+rarely errs at all, so its run shows the verifier does not hold back correct claims,
+but it says little about how well the verifier catches errors: for that you need the
+perturbation benchmark and the Mistral run.
 
 **How far to trust this.** The directional rules were developed in three rounds,
 each after reading the previous round's output, so the early seeds are in-sample.
 `results/llm_manual_audit.md` records every round, the leaks each one exposed, and a
-final hand audit of the 61 distinct technical claims that were surfaced: none
+final hand audit of the 67 distinct Mistral technical claims that were surfaced: none
 states a checkable fact that is wrong; one is vague; two draw a wrong conclusion from
-a correct premise, which the verifier cannot detect. One model, three tickers,
-synthetic evidence.
+a correct premise, which the verifier cannot detect. Auditing the Groq run also
+exposed two verifier bugs that wrongly rejected correct claims (ISO dates read as
+numbers; "high"/"highest", "closed"/"close" not matched); both are fixed and tested.
+Three tickers, synthetic evidence. Groq's model is set by `GROQ_MODEL` (Groq retires
+models; the default is `openai/gpt-oss-120b`).
 
 ### 3. Sentiment vs. price moves (real data) — `results/sentiment_study.json`
 
@@ -210,7 +217,7 @@ python pipeline.py "Give me a full report on Infosys"                    # CLI, 
 python pipeline.py "Complete analysis of TCS" --offline --llm            # LLM analysts
 streamlit run frontend/streamlit_app.py                                  # demo UI
 uvicorn api.main:app --reload                                            # REST API
-python -m pytest tests/ -q                                               # 42 tests, ~10 s
+python -m pytest tests/ -q                                               # 48 tests, ~10 s
 python -m eval.run_all --offline                                         # benchmark + ablation + router
 python -m eval.llm_eval --seed 7                                         # LLM claims evaluation
 python -m eval.sentiment_study all                                       # headlines -> FinBERT -> correlation
@@ -218,7 +225,8 @@ python -m eval.sentiment_study all                                       # headl
 
 LLM backend (for `--llm`): Groq if `GROQ_API_KEY` is set, else a local Ollama
 server (`OLLAMA_MODEL` or the first installed model). Override with
-`FINRESEARCH_LLM=groq|ollama|none`.
+`FINRESEARCH_LLM=groq|ollama|none`. Put keys in a local `.env` (copy
+`.env.example`; `.env` is git-ignored).
 
 Backends are explicit, so a number always says what produced it:
 `FINRESEARCH_EMBEDDER=tfidf|neural|auto`, `FINRESEARCH_SCORER=lexicon|finbert|auto`.
@@ -258,7 +266,7 @@ rag/                    embedder (pluggable) + evidence store
 data/                   snapshot corpus; live connectors (yfinance, RSS, Google News, GDELT)
 eval/                   perturbation benchmark, ablation, LLM eval, sentiment study, router test set
 results/                every reported number
-tests/                  42 tests
+tests/                  48 tests
 ```
 
 ## Known limitations

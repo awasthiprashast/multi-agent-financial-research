@@ -50,12 +50,12 @@ INFY.NS,technical,"The Relative Strength Index (RSI) of Infosys is above 70, ind
 INFY.NS,technical,"The MACD line of Infosys is higher than the signal line, suggesting a bullish signal.",verified,0.905,,True,,True
 INFY.NS,technical,"The Bollinger band upper limit of Infosys is higher than the closing price, indicating potential for price increase.",flagged,0.45,claim contradicts values recomputed from raw prices: upper band 1511.46 vs close 1512.37,True,,False
 INFY.NS,technical,"The closing price of Infosys has decreased over the 252 trading sessions, from ₹1543.32 to ₹1512.37.",verified,0.98,,True,,True
-INFY.NS,sentiment,"The tone of recent news about INFY.NS is neutral, as there are equal numbers of positive and negative news items.",verified,0.987,,True,,True
-INFY.NS,sentiment,"Infosys shares advanced due to a stronger-than-expected order book, as reported by the company.",verified,0.995,,True,,True
+INFY.NS,sentiment,"The tone of recent news about INFY.NS is neutral, as the net sentiment score is 0.0.",verified,0.992,,True,,True
+INFY.NS,sentiment,Infosys shares advanced due to a stronger-than-expected order book.,verified,0.997,,True,,True
 INFY.NS,sentiment,Analysts attribute the positive movement in Infosys shares to improving deal conversion in the BFSI segment.,verified,0.965,,True,,True
 INFY.NS,risk,The annualized volatility of INFY.NS's daily log returns over the given period is 22.7%.,verified,0.985,,True,,True
 INFY.NS,risk,The maximum drawdown for INFY.NS over the specified period was -26.2%.,verified,0.956,,True,,True
 INFY.NS,risk,The historical one-day Value at Risk for INFY.NS at the 95% level is -2.62%.,verified,0.989,,True,,True
 INFY.NS,risk,The total return for INFY.NS over the given period was -2.0%.,verified,0.906,,True,,True
-INFY.NS,technical,"The Relative Strength Index (RSI) of Infosys, as computed from the provided data, is 66.8, which is a neutral reading.",revised-output,0.899,,True,,True
+INFY.NS,technical,"The Relative Strength Index (RSI) of Infosys, as computed from the provided data, is 66.8, which is a neutral reading and does not indicate that the stock may be overbought.",revised-output,0.868,,True,,True
 INFY.NS,technical,"The Bollinger band upper limit of Infosys, as computed from the provided data, is ₹1511.46, which is slightly lower than the last close price of ₹1512.37.",revised-output,0.946,,True,,True

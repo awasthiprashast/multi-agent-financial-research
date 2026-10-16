@@ -75,13 +75,13 @@ def _bad_numbers(claim_text: str, truth: List[float]) -> List[str]:
     return bad
 
 
-def summarize() -> None:
-    """Aggregate every results/llm_eval*.json (one per sampling seed)."""
+def summarize(prefix: str = "") -> None:
+    """Aggregate every results/<prefix>llm_eval*.json (one per sampling seed)."""
     import glob
 
     runs = []
-    for path in sorted(glob.glob(os.path.join(RESULTS_DIR, "llm_eval*.json"))):
-        if os.path.basename(path) == "llm_eval_summary.json":
+    for path in sorted(glob.glob(os.path.join(RESULTS_DIR, f"{prefix}llm_eval*.json"))):
+        if os.path.basename(path) == f"{prefix}llm_eval_summary.json":
             continue
         with open(path, encoding="utf-8") as fh:
             runs.append(json.load(fh))
@@ -93,7 +93,8 @@ def summarize() -> None:
     total["seeds"] = [r.get("seed", 7) for r in runs]
     total["first_pass_flag_rate"] = round(
         total["claims_flagged_first_pass"] / total["llm_claims"], 4) if total["llm_claims"] else None
-    with open(os.path.join(RESULTS_DIR, "llm_eval_summary.json"), "w", encoding="utf-8") as fh:
+    with open(os.path.join(RESULTS_DIR, f"{prefix}llm_eval_summary.json"), "w",
+              encoding="utf-8") as fh:
         json.dump(total, fh, indent=2)
     print(json.dumps(total, indent=2))
 
@@ -102,12 +103,14 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--summarize", action="store_true",
                     help="aggregate existing per-seed results and exit")
+    ap.add_argument("--groq", action="store_true",
+                    help="with --summarize: aggregate the Groq runs instead of Ollama")
     ap.add_argument("--tickers", nargs="*", default=list(NAMES))
     ap.add_argument("--embedder", default="tfidf")
     ap.add_argument("--seed", type=int, default=7, help="sampling seed for the LLM")
     args = ap.parse_args()
     if args.summarize:
-        summarize()
+        summarize("groq_" if args.groq else "")
         return
     os.environ["FINRESEARCH_LLM_SEED"] = str(args.seed)
     os.environ["FINRESEARCH_EMBEDDER"] = args.embedder
@@ -152,6 +155,10 @@ def main() -> None:
                 })
         print(f"  {ticker}: {len(rep.first_pass)} claims, {len(rep.withheld)} withheld")
 
+    if not rows:
+        raise SystemExit(f"{pipe.llm.name} produced no claims for any ticker. Check the "
+                         "backend: an invalid API key or an unreachable server is "
+                         "logged above as 'LLM call failed'.")
     first = [r for r in rows if r["first_pass_status"] != "revised-output"]
     revised = [r for r in rows if r["first_pass_status"] == "revised-output"]
     bad = [r for r in first if not r["oracle_numeric_ok"]]
@@ -181,10 +188,12 @@ def main() -> None:
     }
     os.makedirs(RESULTS_DIR, exist_ok=True)
     tag = "" if args.seed == 7 else f"_seed{args.seed}"
+    prefix = "groq_" if pipe.llm.name.startswith("groq") else ""   # keep models apart
     metrics["seed"] = args.seed
-    with open(os.path.join(RESULTS_DIR, f"llm_eval{tag}.json"), "w", encoding="utf-8") as fh:
+    with open(os.path.join(RESULTS_DIR, f"{prefix}llm_eval{tag}.json"), "w",
+              encoding="utf-8") as fh:
         json.dump(metrics, fh, indent=2)
-    with open(os.path.join(RESULTS_DIR, f"llm_claims{tag}.csv"), "w", newline="",
+    with open(os.path.join(RESULTS_DIR, f"{prefix}llm_claims{tag}.csv"), "w", newline="",
               encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=list(rows[0].keys()))
         w.writeheader()

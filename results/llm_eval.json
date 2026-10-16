@@ -6,18 +6,18 @@
     "INFY.NS"
   ],
   "llm_claims": 53,
-  "claims_flagged_first_pass": 4,
-  "first_pass_flag_rate": 0.0755,
+  "claims_flagged_first_pass": 5,
+  "first_pass_flag_rate": 0.0943,
   "claims_with_a_wrong_number_per_oracle": 0,
   "wrong_number_rate": 0.0,
   "verifier_recall_on_wrong_numbers": null,
-  "verifier_flags_on_numerically_ok_claims": 4,
+  "verifier_flags_on_numerically_ok_claims": 5,
   "numerically_ok_claims": 53,
   "wrong_numbers_that_reached_the_report": 0,
   "revisions_attempted": 5,
-  "revisions_successful": 3,
+  "revisions_successful": 5,
   "revised_outputs_with_wrong_numbers": 0,
-  "seconds": 334.3,
+  "seconds": 352.3,
   "note": "numeric oracle uses structured source values; qualitative errors need manual review of results/llm_claims.csv",
   "seed": 7
 }

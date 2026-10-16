@@ -23,6 +23,8 @@ round's output, so early seeds are **in-sample**:
 | 2 (seeds 23, 101) | "higher than the 20-day average **but lower than the 50-day**" (false) **surfaced** | continuation-clause rule; average-as-subject rule |
 | 3 (seeds 555, 909, never seen by the rules) | "close is **equal to** the 20-day average" (0.9 % off) **surfaced** | equality rule |
 
+| 4 (Groq `gpt-oss-120b`) | 14 of 29 withheld claims were **correct**: "2026-01-01 to 2026-12-28" was read as the numbers −01, −01, −12, −28; "a high of ₹1493" did not match "the highest close"; "closed at" did not match "close" | dates masked before number extraction; small word-form map (highest→high, closed→close, fell→decline …) |
+
 Seeds 555 and 909 were generated after round 2, so they were a partly held-out test;
 they still revealed one gap (the round-3 rule). All five seeds were then re-run on the
 final code, and the final-code surfaced technical claims were re-audited.

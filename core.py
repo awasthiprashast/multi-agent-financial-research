@@ -54,6 +54,8 @@ NUM_RE = re.compile(
     re.IGNORECASE,
 )
 
+_ISO_DATE = re.compile(r"\b\d{4}-\d{2}-\d{2}\b")
+
 _SCALE = {
     "": 1.0, "%": 1.0, "percent": 1.0, "per cent": 1.0, "x": 1.0,
     "bps": 0.01,
@@ -84,6 +86,10 @@ def extract_numbers(text: str) -> List[NumericFact]:
     is deterministic, auditable and free — which is the whole point.
     """
     facts: List[NumericFact] = []
+    # Calendar dates are not quantities: "2026-01-01 to 2026-12-28" must not become
+    # the numbers -01, -01, -12, -28. Blank them out in place (same length) so the
+    # offsets of every remaining number stay valid.
+    text = _ISO_DATE.sub(lambda m: " " * len(m.group(0)), text)
     for m in NUM_RE.finditer(text):
         raw_num = m.group("num")
         if raw_num is None:

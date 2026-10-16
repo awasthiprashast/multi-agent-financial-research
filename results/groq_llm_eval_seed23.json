@@ -1,0 +1,23 @@
+{
+  "llm": "groq/openai/gpt-oss-120b",
+  "tickers": [
+    "TCS.NS",
+    "RELIANCE.NS",
+    "INFY.NS"
+  ],
+  "llm_claims": 48,
+  "claims_flagged_first_pass": 0,
+  "first_pass_flag_rate": 0.0,
+  "claims_with_a_wrong_number_per_oracle": 0,
+  "wrong_number_rate": 0.0,
+  "verifier_recall_on_wrong_numbers": null,
+  "verifier_flags_on_numerically_ok_claims": 0,
+  "numerically_ok_claims": 48,
+  "wrong_numbers_that_reached_the_report": 0,
+  "revisions_attempted": 0,
+  "revisions_successful": 0,
+  "revised_outputs_with_wrong_numbers": 0,
+  "seconds": 14.9,
+  "note": "numeric oracle uses structured source values; qualitative errors need manual review of results/llm_claims.csv",
+  "seed": 23
+}

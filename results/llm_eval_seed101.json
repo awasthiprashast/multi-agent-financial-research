@@ -17,7 +17,7 @@
   "revisions_attempted": 3,
   "revisions_successful": 1,
   "revised_outputs_with_wrong_numbers": 0,
-  "seconds": 302.6,
+  "seconds": 323.0,
   "note": "numeric oracle uses structured source values; qualitative errors need manual review of results/llm_claims.csv",
   "seed": 101
 }

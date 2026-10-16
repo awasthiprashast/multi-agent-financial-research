@@ -225,6 +225,34 @@ def test_self_contradictory_macd_claim_is_withheld():
     assert v.status == "flagged" and "recomputed" in v.reason
 
 
+# ------------------------------------------- dates and word forms (Groq audit)
+def test_dates_are_not_quantities():
+    assert extract_numbers("over the 2026-01-01 to 2026-12-28 window") == []
+    facts = extract_numbers("return of -7.9% over 2026-01-01 to 2026-12-28")
+    assert [f.value for f in facts] == [-7.9]
+    assert facts[0].start == "return of -7.9% over 2026-01-01 to 2026-12-28".index("7.9")
+
+
+def test_claim_with_a_date_range_is_verified():
+    ind = PIPE._prepare("TCS.NS")["indicators"]
+    v = _verdict(f"TCS.NS delivered a total return of {ind['period_return_pct']}% over the "
+                 "2026-01-01 to 2026-12-28 window.")
+    assert v.status == "verified", v.reason
+
+
+def test_high_low_wording_matches_highest_lowest_evidence():
+    prices = PIPE._prepare("TCS.NS")["prices"]["close"]
+    v = _verdict(f"The stock fell over the window, with a high of ₹{max(prices):.2f} "
+                 f"and a low of ₹{min(prices):.2f}.")
+    assert v.status == "verified", v.reason
+
+
+def test_closed_at_matches_last_close():
+    ind = PIPE._prepare("TCS.NS")["indicators"]
+    assert _verdict(f"TCS.NS closed at ₹{ind['last_close']} on the last session.").status == "verified"
+    assert _verdict(f"TCS.NS closed at ₹{ind['last_close'] + 400} on the last session.").status == "flagged"
+
+
 # ------------------------------------------------------------- determinism
 def test_retrieval_ties_are_broken_by_chunk_id():
     from core import Chunk

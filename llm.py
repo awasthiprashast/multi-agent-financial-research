@@ -10,7 +10,8 @@ An LLM is used in two places, and in both its output is untrusted:
     "LLM hallucination" the verifier exists to catch.
 
 Order of preference (override with FINRESEARCH_LLM = groq | ollama | none):
-  1. Groq free tier (llama-3.3-70b-versatile) if GROQ_API_KEY is set
+  1. Groq free tier if GROQ_API_KEY is set (model: GROQ_MODEL, default
+     openai/gpt-oss-120b; list what your key can use with the groq models API)
   2. a local Ollama server (model from OLLAMA_MODEL, else the first one installed)
   3. none — template analysts only, deterministic and free
 """
@@ -44,13 +45,17 @@ class LLM:
         return False
 
 
+DEFAULT_GROQ_MODEL = "openai/gpt-oss-120b"
+
+
 class GroqLLM(LLM):
-    def __init__(self, model: str = "llama-3.3-70b-versatile"):
+    def __init__(self, model: Optional[str] = None):
         from groq import Groq  # noqa: WPS433
 
         key = os.environ.get("GROQ_API_KEY")
         if not key:
             raise RuntimeError("GROQ_API_KEY not set")
+        model = model or os.environ.get("GROQ_MODEL") or DEFAULT_GROQ_MODEL
         self._client = Groq(api_key=key)
         self._model = model
         self.name = f"groq/{model}"
@@ -61,12 +66,18 @@ class GroqLLM(LLM):
 
     def generate(self, system: str, user: str, json_mode: bool = False) -> str:
         kwargs = {"response_format": {"type": "json_object"}} if json_mode else {}
+        if "gpt-oss" in self._model:
+            # reasoning model: reasoning tokens count against the budget, so give it
+            # room and keep the reasoning short
+            kwargs.update(reasoning_effort="low", max_completion_tokens=3000)
+        else:
+            kwargs.update(max_tokens=900)
         r = self._client.chat.completions.create(
             model=self._model,
             messages=[{"role": "system", "content": system},
                       {"role": "user", "content": user}],
-            temperature=0.2, max_tokens=900, **kwargs)
-        return r.choices[0].message.content.strip()
+            temperature=0.2, **kwargs)
+        return (r.choices[0].message.content or "").strip()
 
     def rephrase(self, text: str) -> str:
         return self.generate(

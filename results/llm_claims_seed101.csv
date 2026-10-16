@@ -46,9 +46,9 @@ INFY.NS,technical,"The Relative Strength Index (RSI) for Infosys indicates that 
 INFY.NS,technical,"The MACD histogram for Infosys suggests a bullish signal, as the MACD line is higher than the signal line.",verified,0.905,,True,,True
 INFY.NS,technical,"The Bollinger bands for Infosys indicate a wide range of price fluctuations, with the upper band at ₹1511.46 and the lower band at ₹1355.16.",verified,0.934,,True,,True
 INFY.NS,technical,"Over the past 252 trading sessions, the closing price of Infosys has decreased from ₹1543.32 to ₹1512.37.",verified,0.982,,True,,True
-INFY.NS,sentiment,"The tone of recent news about Infosys is neutral, as there are equal numbers of positive and negative news items.",verified,0.975,,True,,True
-INFY.NS,sentiment,"Infosys' shares advanced due to a stronger-than-expected order book, as reported in a recent news item.",verified,0.99,,True,,True
-INFY.NS,sentiment,"Analysts attribute the positive movement in Infosys' shares to improving deal conversion in the BFSI segment, as mentioned in a recent news item.",verified,0.936,,True,,True
+INFY.NS,sentiment,"The tone of recent news about Infosys (INFY.NS) is neutral, as indicated by a net sentiment score of 0.0 derived from 12 indexed news items.",verified,0.995,,True,,True
+INFY.NS,sentiment,"Infosys shares advanced due to a stronger-than-expected order book, as reported by the company.",verified,0.995,,True,,True
+INFY.NS,sentiment,Analysts attribute the positive movement in Infosys shares to improving deal conversion in the BFSI segment.,verified,0.965,,True,,True
 INFY.NS,risk,The annualized volatility of INFY.NS's daily log returns over the given period is 22.7%.,verified,0.985,,True,,True
 INFY.NS,risk,The maximum drawdown for INFY.NS over the specified period was -26.2%.,verified,0.956,,True,,True
 INFY.NS,risk,The historical one-day Value at Risk for INFY.NS at the 95% level is -2.62%.,verified,0.989,,True,,True

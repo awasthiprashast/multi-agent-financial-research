@@ -83,12 +83,28 @@ _DOWN = re.compile(
 _SIGNED_UNITS = {"%", "percent", "per cent", "bps"}
 
 
+# Word forms that mean the same thing in a market-data sentence. Without this, "a
+# high of 1493" cannot be matched to "the highest close was 1493".
+_CANON = {
+    "highest": "high", "higher": "high", "peak": "high", "top": "high",
+    "lowest": "low", "lower": "low", "trough": "low", "bottom": "low",
+    "closed": "close", "closing": "close", "closes": "close",
+    "fell": "decline", "fall": "decline", "fallen": "decline", "declined": "decline",
+    "drop": "decline", "dropped": "decline", "decreased": "decline",
+    "decrease": "decline", "dipped": "decline",
+    "rose": "rise", "risen": "rise", "gained": "rise", "increased": "rise",
+    "increase": "rise", "climbed": "rise",
+    "volatile": "volatility", "annualized": "annualised",
+}
+
+
 def _tokens(text: str) -> set:
-    """Content words of `text`, numbers removed, lightly stemmed."""
+    """Content words of `text`, numbers removed, lightly stemmed and canonicalised."""
     out = set()
     for w in _TOKEN.findall(NUM_RE.sub(" ", text).lower()):
         if w in _STOP or len(w) < 2:
             continue
+        w = _CANON.get(w, w)
         out.add(w[:-1] if len(w) > 3 and w.endswith("s") else w)
     return out
 
