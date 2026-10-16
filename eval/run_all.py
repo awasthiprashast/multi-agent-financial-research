@@ -19,7 +19,7 @@ from typing import Dict, List
 from agents.orchestrator import TRAIN, Router
 from agents.validator import VerificationAgent
 from core import Claim
-from data.corpus import GROUND_TRUTH, all_tickers
+from data.corpus import all_tickers
 from eval.perturb import build_benchmark
 from pipeline import ResearchPipeline
 
@@ -91,7 +91,7 @@ def eval_hallucination(pipe: ResearchPipeline, claims: List[Claim]) -> Dict:
 
     # attribute each claim to the store it came from via its cited chunk ids
     def store_for(c: Claim):
-        for t, st in ticker_store.items():
+        for st in ticker_store.values():
             if any(st.get(cid) is not None for cid in c.cited_chunk_ids):
                 return st
         return ticker_store[all_tickers()[0]]

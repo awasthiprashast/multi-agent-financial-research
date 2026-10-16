@@ -8,9 +8,9 @@ disclaimer is not optional and is not configurable.
 
 from __future__ import annotations
 
-from typing import Dict, List
+from typing import List
 
-from core import Claim, Report, Verdict
+from core import Report
 
 DISCLAIMER = (
     "This document is automatically generated research output produced by an "

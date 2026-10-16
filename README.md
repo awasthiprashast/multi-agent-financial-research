@@ -210,14 +210,14 @@ features.
 ## Quick start
 
 ```bash
-pip install -r requirements.txt
+pip install -e ".[all,dev]"        # or just `pip install -e .` for the small core
 
 python pipeline.py "Should I look at TCS for a 1-year hold?" --offline   # CLI, synthetic corpus
 python pipeline.py "Give me a full report on Infosys"                    # CLI, live data
 python pipeline.py "Complete analysis of TCS" --offline --llm            # LLM analysts
 streamlit run frontend/streamlit_app.py                                  # demo UI
 uvicorn api.main:app --reload                                            # REST API
-python -m pytest tests/ -q                                               # 48 tests, ~10 s
+python -m pytest tests/ -q                                               # 74 tests, ~30 s
 python -m eval.run_all --offline                                         # benchmark + ablation + router
 python -m eval.llm_eval --seed 7                                         # LLM claims evaluation
 python -m eval.sentiment_study all                                       # headlines -> FinBERT -> correlation
@@ -231,6 +231,11 @@ server (`OLLAMA_MODEL` or the first installed model). Override with
 Backends are explicit, so a number always says what produced it:
 `FINRESEARCH_EMBEDDER=tfidf|neural|auto`, `FINRESEARCH_SCORER=lexicon|finbert|auto`.
 Tests pin `tfidf` + `lexicon` for speed and determinism.
+
+## Deploying
+
+Docker image, compose file, API auth / rate limiting / background jobs, and the list of
+what is still not production-grade are in [DEPLOY.md](DEPLOY.md).
 
 ## Design decisions worth defending
 
@@ -266,7 +271,7 @@ rag/                    embedder (pluggable) + evidence store
 data/                   snapshot corpus; live connectors (yfinance, RSS, Google News, GDELT)
 eval/                   perturbation benchmark, ablation, LLM eval, sentiment study, router test set
 results/                every reported number
-tests/                  48 tests
+tests/                  74 tests, 80 % line coverage
 ```
 
 ## Known limitations
@@ -281,4 +286,5 @@ tests/                  48 tests
 ---
 
 *Research output from an academic prototype. Not investment advice.*
+
 

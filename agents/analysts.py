@@ -14,7 +14,7 @@ model is exactly the failure this project exists to prevent.
 from __future__ import annotations
 
 import re
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from agents.base import Agent
 from core import Claim, extract_numbers

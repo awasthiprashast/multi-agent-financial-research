@@ -1,7 +1,7 @@
 """Sentiment-study plumbing: session mapping, relevance filter, headline parsing."""
 
-from eval.sentiment_study import UNIVERSE, _corr, _relevant, _trading_day
 from eval.llm_eval import _bad_numbers
+from eval.sentiment_study import UNIVERSE, _corr, _relevant, _trading_day
 
 DAYS = ["2026-09-14", "2026-09-15", "2026-09-16", "2026-09-17", "2026-09-18", "2026-09-21"]
 

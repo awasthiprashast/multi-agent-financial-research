@@ -93,7 +93,7 @@ def stage_fetch(window_days: int, source: str = "gnews") -> None:
 
     start, end = _period()
     store = _load(ARTICLES, {})
-    for ticker, (query, aliases) in UNIVERSE.items():
+    for ticker, (query, _aliases) in UNIVERSE.items():
         if ticker in store and store[ticker].get("window_days") == window_days \
                 and store[ticker].get("end") == end.isoformat() \
                 and store[ticker].get("source") == source:

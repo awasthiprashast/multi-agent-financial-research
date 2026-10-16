@@ -1,0 +1,65 @@
+# docker compose up --build                 API on :8000
+# docker compose --profile ui up --build    API + Streamlit UI on :8501
+# docker compose --profile local-llm up     adds a local Ollama server for LLM analysts
+#
+# Secrets come from a local .env file (copy .env.example). Never bake keys into the image.
+services:
+  api:
+    build:
+      context: .
+      args:
+        WITH_NEURAL: "0"            # "1" for FinBERT + MiniLM (large image)
+    image: finresearch:latest
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      FINRESEARCH_OFFLINE: "${FINRESEARCH_OFFLINE:-0}"
+      FINRESEARCH_RATE_LIMIT: "${FINRESEARCH_RATE_LIMIT:-30}"
+      OLLAMA_HOST: "${OLLAMA_HOST:-http://ollama:11434}"
+    ports:
+      - "8000:8000"
+    volumes:
+      - cache:/app/data/cache
+    restart: unless-stopped
+    read_only: true                  # nothing but the cache volume and /tmp is writable
+    tmpfs:
+      - /tmp
+      - /home/app/.cache
+    security_opt:
+      - no-new-privileges:true
+
+  ui:
+    profiles: ["ui"]
+    image: finresearch:latest
+    command: ["python", "-m", "streamlit", "run", "frontend/streamlit_app.py",
+              "--server.port=8501", "--server.address=0.0.0.0", "--server.headless=true"]
+    env_file:
+      - path: .env
+        required: false
+    ports:
+      - "8501:8501"
+    volumes:
+      - cache:/app/data/cache
+    depends_on:
+      - api
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /home/app/.cache
+    security_opt:
+      - no-new-privileges:true
+
+  ollama:
+    profiles: ["local-llm"]
+    image: ollama/ollama:latest
+    volumes:
+      - ollama:/root/.ollama
+    ports:
+      - "11434:11434"
+    restart: unless-stopped
+
+volumes:
+  cache:
+  ollama:

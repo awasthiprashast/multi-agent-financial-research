@@ -86,12 +86,15 @@ class GroqLLM(LLM):
 
 
 class OllamaLLM(LLM):
-    def __init__(self, model: Optional[str] = None,
-                 host: str = "http://localhost:11434"):
+    def __init__(self, model: Optional[str] = None, host: Optional[str] = None):
         import requests  # noqa: WPS433
 
+        host = host or os.environ.get("OLLAMA_HOST") or "http://localhost:11434"
+        if not host.startswith("http"):
+            host = "http://" + host
         self._requests = requests
-        self._host = host
+        self._host = host.rstrip("/")
+        host = self._host
         tags = requests.get(f"{host}/api/tags", timeout=3)
         tags.raise_for_status()
         installed = [m["name"] for m in tags.json().get("models", [])]

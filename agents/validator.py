@@ -54,10 +54,8 @@ false claims the mechanism rejects.
 
 from __future__ import annotations
 
-import time
-from typing import Dict, List, Optional, Tuple
-
 import re
+from typing import Dict, List, Optional, Tuple
 
 from agents.data_collector import DataCollectionAgent
 from core import NUM_RE, Claim, NumericFact, Verdict, extract_numbers

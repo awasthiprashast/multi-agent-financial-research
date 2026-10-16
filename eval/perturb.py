@@ -23,10 +23,9 @@ positive class.
 from __future__ import annotations
 
 import random
-import re
 from typing import Dict, List, Tuple
 
-from core import Claim, NUM_RE
+from core import NUM_RE, Claim
 
 PERTURBATIONS = ["numeric_drift", "numeric_swap", "entity_swap", "fabricated_detail"]
 

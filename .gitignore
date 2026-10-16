@@ -5,3 +5,6 @@ __pycache__/
 .env
 data/cache/
 *_backup_*/
+.coverage
+.ruff_cache/
+coverage.xml

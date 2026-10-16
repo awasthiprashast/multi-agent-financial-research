@@ -14,6 +14,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 
+# ChromaDB phones home by default; this is a research tool, not telemetry.
+os.environ.setdefault("ANONYMIZED_TELEMETRY", "False")
+
 
 def load_env(path: Path | None = None) -> None:
     path = path or ROOT / ".env"

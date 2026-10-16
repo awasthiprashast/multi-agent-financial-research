@@ -26,7 +26,7 @@ import re
 import time
 from typing import Dict, List
 
-from core import Claim, extract_numbers
+from core import extract_numbers
 
 RESULTS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                            "results")

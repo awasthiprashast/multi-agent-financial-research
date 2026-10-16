@@ -5,10 +5,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from agents.orchestrator import Router, resolve_ticker           # noqa: E402
-from agents.validator import VerificationAgent                    # noqa: E402
-from core import Claim, extract_numbers                           # noqa: E402
-from pipeline import ResearchPipeline                             # noqa: E402
+from agents.orchestrator import Router, resolve_ticker  # noqa: E402
+from agents.validator import VerificationAgent  # noqa: E402
+from core import Claim, extract_numbers  # noqa: E402
+from pipeline import ResearchPipeline  # noqa: E402
 
 PIPE = ResearchPipeline(prefer_live=False)
 
@@ -264,7 +264,6 @@ def test_retrieval_ties_are_broken_by_chunk_id():
 
 
 def test_chroma_search_matches_exact_ranking():
-    import numpy as np
     from rag.store import EvidenceStore
     st = PIPE._prepare("TCS.NS")["store"]
     q = "Return on equity for the year was 51.2%."

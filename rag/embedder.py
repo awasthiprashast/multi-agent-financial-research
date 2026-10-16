@@ -20,7 +20,7 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import List, Optional, Sequence
+from typing import Optional, Sequence
 
 import numpy as np
 

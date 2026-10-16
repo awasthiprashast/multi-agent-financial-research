@@ -100,9 +100,9 @@ def _filing_paragraphs(ticker: str) -> List[Tuple[str, str]]:
          f"eight quarters, though the company cautioned that conversion timelines "
          f"remain sensitive to the macro environment."),
         (f"Q4FY26_{ticker}_RESULT_p4",
-         f"Attrition on a trailing twelve-month basis moderated further during the "
-         f"quarter. Headcount declined marginally on a sequential basis as the "
-         f"company continued to prioritise utilisation over gross additions."),
+         "Attrition on a trailing twelve-month basis moderated further during the "
+         "quarter. Headcount declined marginally on a sequential basis as the "
+         "company continued to prioritise utilisation over gross additions."),
     ]
 
 
@@ -165,8 +165,10 @@ def _price_series(ticker: str, n: int = 252) -> Dict[str, list]:
         price = price * math.exp(shock)
         h = max(o, price) * (1 + abs(rng.gauss(0, daily_sigma / 3)))
         lo = min(o, price) * (1 - abs(rng.gauss(0, daily_sigma / 3)))
-        opens.append(round(o, 2)); closes.append(round(price, 2))
-        highs.append(round(h, 2)); lows.append(round(lo, 2))
+        opens.append(round(o, 2))
+        closes.append(round(price, 2))
+        highs.append(round(h, 2))
+        lows.append(round(lo, 2))
         vols.append(float(int(rng.gauss(4.2e6, 8e5))))
     dates = [f"2026-{1 + (i // 21) % 12:02d}-{1 + i % 28:02d}" for i in range(n)]
     return {

@@ -12,9 +12,8 @@ import hashlib
 import re
 import time
 import uuid
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, List, Optional
-
 
 # --------------------------------------------------------------------------
 # Evidence

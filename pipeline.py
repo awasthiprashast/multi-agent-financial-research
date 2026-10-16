@@ -10,12 +10,14 @@ Streamlit UI, so all three demonstrate exactly the same behaviour.
 
 from __future__ import annotations
 
+import logging
+import os
+import threading
 import time
 from typing import Dict, List, Optional
 
 import config  # noqa: F401  (loads .env before any backend is chosen)
-from agents.analysts import (FundamentalAgent, RiskAgent, SentimentAgent,
-                             TechnicalAgent)
+from agents.analysts import FundamentalAgent, RiskAgent, SentimentAgent, TechnicalAgent
 from agents.data_collector import DataCollectionAgent
 from agents.orchestrator import Router, resolve_ticker
 from agents.report_generator import render_markdown
@@ -23,6 +25,11 @@ from agents.validator import VerificationAgent
 from core import Claim, Report
 from data.corpus import load_corpus
 from rag.store import EvidenceStore
+
+log = logging.getLogger(__name__)
+
+# Live data goes stale; the frozen snapshot never does. 0 disables expiry.
+CACHE_TTL_S = float(os.environ.get("FINRESEARCH_CACHE_TTL_S", "3600"))
 
 AGENT_CLASSES = {
     "fundamental": FundamentalAgent,
@@ -43,6 +50,7 @@ class ResearchPipeline:
         self.threshold = threshold
         self.router = router or Router().fit()
         self._cache: Dict[str, dict] = {}
+        self._lock = threading.RLock()          # the pipeline is shared across API threads
         self.llm = None
         if analysts in ("llm", "auto"):
             from llm import get_llm
@@ -62,9 +70,19 @@ class ResearchPipeline:
 
     # ------------------------------------------------------------- context
     def _prepare(self, ticker: str) -> dict:
-        if ticker in self._cache:
-            return self._cache[ticker]
+        with self._lock:
+            ctx = self._cache.get(ticker)
+            if ctx is not None:
+                fresh = (ctx["mode"] != "live" or CACHE_TTL_S <= 0
+                         or time.time() - ctx["built_at"] < CACHE_TTL_S)
+                if fresh:
+                    return ctx
+                log.info("cache for %s expired; re-ingesting", ticker)
+            ctx = self._build(ticker)
+            self._cache[ticker] = ctx
+            return ctx
 
+    def _build(self, ticker: str) -> dict:
         t0 = time.perf_counter()
         chunks, prices, news_gold, mode = load_corpus(ticker, prefer_live=self.prefer_live)
 
@@ -90,8 +108,10 @@ class ResearchPipeline:
             "mode": mode,
             "ingest_seconds": round(time.perf_counter() - t0, 3),
             "chunks": len(chunks),
+            "built_at": time.time(),
         }
-        self._cache[ticker] = ctx
+        log.info("ingested %s: mode=%s chunks=%d embedder=%s in %.2fs", ticker, mode,
+                 len(chunks), store.embedder.name, ctx["ingest_seconds"])
         return ctx
 
     # ------------------------------------------------------- sentiment pass
@@ -172,6 +192,9 @@ class ResearchPipeline:
             withheld=list(validator.withheld), first_pass=list(validator.first_pass),
             analysts=self.analysts,
         )
+        log.info("report ticker=%s agents=%s analysts=%s claims=%d surfaced=%d withheld=%d "
+                 "total=%.2fs", ticker, ",".join(selected), self.analysts, len(verdicts),
+                 report.surfaced_count, len(validator.withheld), report.timings["total_s"])
         return report
 
     def markdown(self, report: Report) -> str:
@@ -192,6 +215,9 @@ if __name__ == "__main__":
                     help="analysts write claims with an LLM (Groq or Ollama); "
                          "every claim is still verified")
     args = ap.parse_args()
+
+    from logging_setup import setup_logging
+    setup_logging()
 
     pipe = ResearchPipeline(prefer_live=not args.offline,
                             analysts="llm" if args.llm else "template")

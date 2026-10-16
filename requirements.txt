@@ -1,28 +1,6 @@
-# core
-numpy>=1.26
-pandas>=2.0
-scikit-learn>=1.4
-scipy>=1.11
-chromadb>=0.5
-
-# data connectors (live mode)
-yfinance>=0.2.40
-feedparser>=6.0
-requests>=2.31
-
-# models (optional — the system runs without them)
-sentence-transformers>=3.0
-transformers>=4.40
-torch>=2.2
-
-# optional LLM narration
-groq>=0.9
-
-# service + UI
-fastapi>=0.110
-uvicorn>=0.29
-streamlit>=1.35
-
-# dev
-pytest>=8.0
-matplotlib>=3.8
+# Convenience install for development: everything, including the heavy neural stack.
+# Minimal / selective installs are defined in pyproject.toml, e.g.
+#   pip install -e .                 # core only (TF-IDF embeddings, lexicon sentiment)
+#   pip install -e ".[api,llm]"      # API + Groq analysts
+#   pip install -e ".[all,dev]"      # everything + test tools
+-e .[all,dev]
