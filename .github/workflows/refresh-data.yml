@@ -1,0 +1,25 @@
+name: refresh-cache
+on:
+  schedule: [{cron: "30 1 * * 1-5"}]   # 07:00 IST weekdays
+  workflow_dispatch:
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.11"}
+      - run: pip install yfinance feedparser requests
+      - name: fetch prices and news
+        run: |
+          python - <<'PY'
+          from data.connectors.live import fetch_prices, fetch_news
+          for t in ["TCS.NS", "RELIANCE.NS", "INFY.NS"]:
+              assert fetch_prices(t), f"no prices for {t}"
+          for name in ["Tata Consultancy Services", "Reliance Industries", "Infosys"]:
+              fetch_news(name)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: data-cache
+          path: data/cache/

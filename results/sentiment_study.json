@@ -1,0 +1,257 @@
+{
+  "period": "2025-10-17 to 2026-10-16",
+  "model": "ProsusAI/finbert",
+  "universe": [
+    "TCS.NS",
+    "RELIANCE.NS",
+    "INFY.NS",
+    "HDFCBANK.NS",
+    "ICICIBANK.NS",
+    "SBIN.NS",
+    "ITC.NS",
+    "LT.NS",
+    "WIPRO.NS",
+    "BHARTIARTL.NS",
+    "HINDUNILVR.NS"
+  ],
+  "headlines_fetched": 45770,
+  "headlines_company_named": 34713,
+  "headlines_scored_and_mapped_to_a_session": 34382,
+  "pooled_same_day_abnormal_return": {
+    "n": 2465,
+    "pearson": 0.2426,
+    "pearson_p": 0.0,
+    "spearman": 0.2123,
+    "spearman_p": 0.0,
+    "permutation_p": 0.0005,
+    "tickers": 11
+  },
+  "pooled_next_day_abnormal_return": {
+    "n": 2454,
+    "pearson": 0.045,
+    "pearson_p": 0.0257,
+    "spearman": 0.0547,
+    "spearman_p": 0.0068,
+    "permutation_p": 0.0255,
+    "tickers": 11
+  },
+  "per_ticker": {
+    "TCS.NS": {
+      "headlines_fetched": 7097,
+      "headlines_company_named": 6028,
+      "days_with_news": 243,
+      "same_day": {
+        "n": 243,
+        "pearson": 0.2985,
+        "pearson_p": 0.0,
+        "spearman": 0.2381,
+        "spearman_p": 0.0002
+      },
+      "next_day": {
+        "n": 242,
+        "pearson": -0.0599,
+        "pearson_p": 0.3533,
+        "spearman": -0.0146,
+        "spearman_p": 0.8207
+      }
+    },
+    "RELIANCE.NS": {
+      "headlines_fetched": 4677,
+      "headlines_company_named": 3283,
+      "days_with_news": 241,
+      "same_day": {
+        "n": 241,
+        "pearson": 0.3062,
+        "pearson_p": 0.0,
+        "spearman": 0.2452,
+        "spearman_p": 0.0001
+      },
+      "next_day": {
+        "n": 240,
+        "pearson": 0.099,
+        "pearson_p": 0.1261,
+        "spearman": 0.1214,
+        "spearman_p": 0.0604
+      }
+    },
+    "INFY.NS": {
+      "headlines_fetched": 4789,
+      "headlines_company_named": 4021,
+      "days_with_news": 241,
+      "same_day": {
+        "n": 241,
+        "pearson": 0.3789,
+        "pearson_p": 0.0,
+        "spearman": 0.355,
+        "spearman_p": 0.0
+      },
+      "next_day": {
+        "n": 240,
+        "pearson": 0.0089,
+        "pearson_p": 0.891,
+        "spearman": -0.0011,
+        "spearman_p": 0.987
+      }
+    },
+    "HDFCBANK.NS": {
+      "headlines_fetched": 6635,
+      "headlines_company_named": 4444,
+      "days_with_news": 234,
+      "same_day": {
+        "n": 234,
+        "pearson": 0.2184,
+        "pearson_p": 0.0008,
+        "spearman": 0.2187,
+        "spearman_p": 0.0008
+      },
+      "next_day": {
+        "n": 233,
+        "pearson": 0.0782,
+        "pearson_p": 0.2342,
+        "spearman": 0.0587,
+        "spearman_p": 0.3728
+      }
+    },
+    "ICICIBANK.NS": {
+      "headlines_fetched": 3859,
+      "headlines_company_named": 1723,
+      "days_with_news": 220,
+      "same_day": {
+        "n": 220,
+        "pearson": 0.119,
+        "pearson_p": 0.0783,
+        "spearman": 0.1173,
+        "spearman_p": 0.0825
+      },
+      "next_day": {
+        "n": 219,
+        "pearson": 0.0265,
+        "pearson_p": 0.697,
+        "spearman": 0.056,
+        "spearman_p": 0.4096
+      }
+    },
+    "SBIN.NS": {
+      "headlines_fetched": 9436,
+      "headlines_company_named": 7800,
+      "days_with_news": 245,
+      "same_day": {
+        "n": 245,
+        "pearson": 0.1977,
+        "pearson_p": 0.0019,
+        "spearman": 0.171,
+        "spearman_p": 0.0073
+      },
+      "next_day": {
+        "n": 244,
+        "pearson": 0.1253,
+        "pearson_p": 0.0506,
+        "spearman": 0.1265,
+        "spearman_p": 0.0485
+      }
+    },
+    "ITC.NS": {
+      "headlines_fetched": 598,
+      "headlines_company_named": 500,
+      "days_with_news": 174,
+      "same_day": {
+        "n": 174,
+        "pearson": 0.2372,
+        "pearson_p": 0.0016,
+        "spearman": 0.2231,
+        "spearman_p": 0.0031
+      },
+      "next_day": {
+        "n": 173,
+        "pearson": 0.1217,
+        "pearson_p": 0.1107,
+        "spearman": 0.1003,
+        "spearman_p": 0.1892
+      }
+    },
+    "LT.NS": {
+      "headlines_fetched": 1185,
+      "headlines_company_named": 924,
+      "days_with_news": 215,
+      "same_day": {
+        "n": 215,
+        "pearson": 0.2453,
+        "pearson_p": 0.0003,
+        "spearman": 0.2031,
+        "spearman_p": 0.0028
+      },
+      "next_day": {
+        "n": 214,
+        "pearson": 0.0084,
+        "pearson_p": 0.9033,
+        "spearman": -0.032,
+        "spearman_p": 0.6416
+      }
+    },
+    "WIPRO.NS": {
+      "headlines_fetched": 3173,
+      "headlines_company_named": 2639,
+      "days_with_news": 229,
+      "same_day": {
+        "n": 229,
+        "pearson": 0.3481,
+        "pearson_p": 0.0,
+        "spearman": 0.3388,
+        "spearman_p": 0.0
+      },
+      "next_day": {
+        "n": 228,
+        "pearson": 0.1407,
+        "pearson_p": 0.0337,
+        "spearman": 0.1301,
+        "spearman_p": 0.0498
+      }
+    },
+    "BHARTIARTL.NS": {
+      "headlines_fetched": 3070,
+      "headlines_company_named": 2618,
+      "days_with_news": 233,
+      "same_day": {
+        "n": 233,
+        "pearson": 0.1238,
+        "pearson_p": 0.0591,
+        "spearman": 0.0849,
+        "spearman_p": 0.1964
+      },
+      "next_day": {
+        "n": 232,
+        "pearson": -0.0266,
+        "pearson_p": 0.6865,
+        "spearman": -0.0308,
+        "spearman_p": 0.641
+      }
+    },
+    "HINDUNILVR.NS": {
+      "headlines_fetched": 1251,
+      "headlines_company_named": 733,
+      "days_with_news": 190,
+      "same_day": {
+        "n": 190,
+        "pearson": 0.2132,
+        "pearson_p": 0.0031,
+        "spearman": 0.1592,
+        "spearman_p": 0.0282
+      },
+      "next_day": {
+        "n": 189,
+        "pearson": 0.0131,
+        "pearson_p": 0.8578,
+        "spearman": 0.0512,
+        "spearman_p": 0.4844
+      }
+    }
+  },
+  "method": "headlines from Google News RSS filtered to those naming the company; FinBERT P(pos)-P(neg); assigned to first tradable session; abnormal return = stock minus Nifty 50",
+  "caveats": [
+    "headlines, not article bodies",
+    "Google News RSS returns at most ~100 items per query window; full windows are split, but coverage of very active names is still a sample",
+    "publication dates only (no reliable time of day), so same-day correlation cannot separate cause from effect",
+    "one year of data and eleven stocks: small-sample, low-power study",
+    "correlation is not a trading signal; no costs, no out-of-sample test"
+  ]
+}

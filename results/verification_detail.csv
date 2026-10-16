@@ -1,0 +1,155 @@
+kind,gold,predicted,confidence,numeric_support,semantic_support,text
+genuine,supported,supported,0.835,1.0,0.45,The maximum drawdown within the window was -26.2%.
+genuine,supported,supported,0.85,1.0,0.5,"RSI(14) is 23.8, which places the stock in oversold territory."
+genuine,supported,supported,0.797,1.0,0.323,"The MACD line is -109.65 against a signal line of -102.02, giving a histogram of -7.63."
+fabricated_detail,unsupported,unsupported,0.45,0.75,0.424,"The 20-day Bollinger band runs from ₹3196.83 to ₹3570.09. The company also disclosed a one-time impairment of ₹4,180 cr "
+genuine,supported,supported,0.918,1.0,0.87,"A representative item in the window reads: ""Tata Consultancy Services shares advanced after the company reported a stron"
+genuine,supported,supported,0.934,1.0,0.781,"The consolidated debt-to-equity ratio was 0.09, and the filing records a net cash position through the year."
+numeric_drift,unsupported,unsupported,0.287,0.0,0.456,The maximum drawdown within the window was -27.88%.
+genuine,supported,supported,0.91,1.0,0.699,"Across 12 indexed news items, 8 were classified positive, 4 negative and 0 neutral, giving a net sentiment score of 0.33"
+genuine,supported,supported,0.91,1.0,0.699,"Across 12 indexed news items, 8 were classified positive, 4 negative and 0 neutral, giving a net sentiment score of 0.33"
+numeric_drift,unsupported,unsupported,0.45,0.5,0.529,Total price return over the 289.8-session window was -7.9%.
+entity_swap,unsupported,unsupported,0.45,1.0,0.517,"Total price return over the 252-session window was -2.0%, according to Tata Consultancy Services's filing."
+numeric_drift,unsupported,unsupported,0.347,0.0,0.657,Dividend yield at the year-end closing price was approximately 1.73%.
+genuine,supported,supported,0.936,1.0,0.899,"A representative item in the window reads: ""Infosys shares advanced after the company reported a stronger-than-expected "
+genuine,supported,supported,0.934,1.0,0.781,"The consolidated debt-to-equity ratio was 0.09, and the filing records a net cash position through the year."
+fabricated_detail,unsupported,unsupported,0.45,0.5,0.658,"Return on equity for the year was 51.2%, which the filing attributes to the company's asset-light operating model. The b"
+genuine,supported,supported,0.895,1.0,0.648,"Consolidated revenue from operations was ₹158,381 cr, up 4.7% year on year."
+genuine,supported,supported,0.934,1.0,0.781,"The last close was ₹1512.37, against a 20-day simple moving average of ₹1433.31 and a 50-day average of ₹1421.63."
+genuine,supported,supported,0.864,1.0,0.546,The 20-day Bollinger band runs from ₹1246.15 to ₹1382.68.
+genuine,supported,supported,0.713,1.0,0.545,Total price return over the 252-session window was -7.9%.
+entity_swap,unsupported,unsupported,0.45,1.0,0.756,"Basic earnings per share were ₹134.2, according to Reliance Industries's filing."
+genuine,supported,supported,0.839,1.0,0.463,"RSI(14) is 66.8, which places the stock in neutral territory."
+genuine,supported,supported,0.911,1.0,0.703,"Return on equity for the year was 51.2%, which the filing attributes to the company's asset-light operating model."
+numeric_drift,unsupported,unsupported,0.45,0.5,0.563,Historical one-day Value at Risk at the 102.6% confidence level was -1.93%.
+genuine,supported,supported,0.911,1.0,0.704,"Return on equity for the year was 9.3%, which the filing attributes to the company's asset-light operating model."
+genuine,supported,supported,0.928,1.0,0.759,"Operating margin for the year was 16.9%, a movement of 40 bps against the prior year."
+numeric_drift,unsupported,unsupported,0.35,0.0,0.667,Dividend yield at the year-end closing price was approximately 2.59%.
+genuine,supported,supported,0.9,1.0,0.667,Dividend yield at the year-end closing price was approximately 1.6%.
+genuine,supported,supported,0.921,1.0,0.737,"The last close was ₹3202.39, against a 20-day simple moving average of ₹3383.46 and a 50-day average of ₹3627.92."
+genuine,supported,supported,0.923,1.0,0.742,"Operating margin for the year was 24.3%, a movement of -70 bps against the prior year."
+fabricated_detail,unsupported,unsupported,0.388,0.0,0.794,"A representative item in the window reads: ""Tata Consultancy Services shares advanced after the company reported a stron"
+genuine,supported,supported,0.844,1.0,0.479,The 20-day Bollinger band runs from ₹3196.83 to ₹3570.09.
+entity_swap,unsupported,unsupported,0.45,1.0,0.715,"The consolidated debt-to-equity ratio was 0.09, and the filing records a net cash position through the year, according t"
+fabricated_detail,unsupported,unsupported,0.45,0.5,0.722,Basic earnings per share were ₹63.4. Attrition rose to 27.9% on a trailing twelve-month basis.
+numeric_swap,unsupported,unsupported,0.45,0.5,0.737,"Operating margin for the year was 46.17%, a movement of -70 bps against the prior year."
+genuine,supported,supported,0.93,1.0,0.767,Basic earnings per share were ₹134.2.
+genuine,supported,supported,0.902,1.0,0.674,"Across 12 indexed news items, 8 were classified positive, 4 negative and 0 neutral, giving a net sentiment score of 0.33"
+fabricated_detail,unsupported,unsupported,0.45,0.667,0.525,"RSI(14) is 23.8, which places the stock in oversold territory. The board approved a share buyback of ₹18,000 cr during t"
+genuine,supported,supported,0.881,1.0,0.603,Annualised volatility of daily returns over the window was 19.0%.
+fabricated_detail,unsupported,unsupported,0.45,0.75,0.383,"The MACD line is -109.65 against a signal line of -102.02, giving a histogram of -7.63. Management guided to an operatin"
+genuine,supported,supported,0.93,1.0,0.767,Basic earnings per share were ₹134.2.
+numeric_drift,unsupported,unsupported,0.379,0.0,0.763,Basic earnings per share were ₹118.33.
+numeric_drift,unsupported,unsupported,0.45,0.5,0.723,"Operating margin for the year was 19.93%, a movement of -70 bps against the prior year."
+fabricated_detail,unsupported,unsupported,0.45,0.5,0.664,Dividend yield at the year-end closing price was approximately 1.6%. Attrition rose to 27.9% on a trailing twelve-month 
+genuine,supported,supported,0.923,1.0,0.879,"A representative item in the window reads: ""Reliance Industries shares advanced after the company reported a stronger-th"
+genuine,supported,supported,0.923,1.0,0.742,"Operating margin for the year was 24.3%, a movement of -70 bps against the prior year."
+numeric_swap,unsupported,unsupported,0.343,0.0,0.642,Dividend yield at the year-end closing price was approximately 3.04%.
+entity_swap,unsupported,unsupported,0.45,1.0,0.625,"Return on equity for the year was 51.2%, which the filing attributes to the company's asset-light operating model, accor"
+genuine,supported,supported,0.9,1.0,0.667,Dividend yield at the year-end closing price was approximately 1.6%.
+fabricated_detail,unsupported,unsupported,0.45,0.5,0.725,Basic earnings per share were ₹134.2. Attrition rose to 27.9% on a trailing twelve-month basis.
+numeric_swap,unsupported,unsupported,0.45,0.667,0.475,The 38-day Bollinger band runs from ₹3196.83 to ₹3570.09.
+genuine,supported,supported,0.895,1.0,0.649,Annualised volatility of daily returns over the window was 25.3%.
+genuine,supported,supported,0.828,1.0,0.427,The maximum drawdown within the window was -34.0%.
+entity_swap,unsupported,unsupported,0.45,1.0,0.374,"The MACD line is -9.58 against a signal line of -11.26, giving a histogram of 1.68, according to Infosys's filing."
+entity_swap,unsupported,unsupported,0.45,1.0,0.615,"A representative item in the window reads: ""Adani Green Energy shares advanced after the company reported a stronger-tha"
+fabricated_detail,unsupported,unsupported,0.45,0.833,0.625,"Across 12 indexed news items, 8 were classified positive, 4 negative and 0 neutral, giving a net sentiment score of 0.33"
+fabricated_detail,unsupported,unsupported,0.45,0.667,0.642,"Operating margin for the year was 21.1%, a movement of 30 bps against the prior year. The company also disclosed a one-t"
+genuine,supported,supported,0.85,1.0,0.5,"RSI(14) is 23.8, which places the stock in oversold territory."
+numeric_swap,unsupported,unsupported,0.45,0.5,0.526,Total price return over the 478.8-session window was -7.9%.
+fabricated_detail,unsupported,unsupported,0.45,0.5,0.725,Basic earnings per share were ₹134.2. Attrition rose to 27.9% on a trailing twelve-month basis.
+numeric_swap,unsupported,unsupported,0.35,0.0,0.668,Annualised volatility of daily returns over the window was 65.78%.
+genuine,supported,supported,0.897,1.0,0.656,Dividend yield at the year-end closing price was approximately 0.4%.
+genuine,supported,supported,0.856,1.0,0.519,Total price return over the 252-session window was -6.7%.
+entity_swap,unsupported,unsupported,0.45,1.0,0.473,"The maximum drawdown within the window was -25.7%, according to Adani Green Energy's filing."
+genuine,supported,supported,0.918,1.0,0.87,"A representative item in the window reads: ""Tata Consultancy Services shares advanced after the company reported a stron"
+genuine,supported,supported,0.931,1.0,0.77,Basic earnings per share were ₹63.4.
+entity_swap,unsupported,unsupported,0.45,1.0,0.709,"The last close was ₹1512.37, against a 20-day simple moving average of ₹1433.31 and a 50-day average of ₹1421.63, accord"
+numeric_swap,unsupported,unsupported,0.45,0.667,0.546,The 52-day Bollinger band runs from ₹1246.15 to ₹1382.68.
+numeric_swap,unsupported,unsupported,0.45,0.667,0.338,"The MACD line is -208.34 against a signal line of -102.02, giving a histogram of -7.63."
+genuine,supported,supported,0.867,1.0,0.558,The 20-day Bollinger band runs from ₹1355.16 to ₹1511.46.
+numeric_swap,unsupported,unsupported,0.387,0.0,0.79,"The consolidated debt-to-equity ratio was 0.04, and the filing records a net cash position through the year."
+genuine,supported,supported,0.899,1.0,0.665,Dividend yield at the year-end closing price was approximately 2.4%.
+genuine,supported,supported,0.911,1.0,0.703,"Return on equity for the year was 51.2%, which the filing attributes to the company's asset-light operating model."
+numeric_swap,unsupported,unsupported,0.45,0.5,0.552,Historical one-day Value at Risk at the 42.75% confidence level was -2.6%.
+fabricated_detail,unsupported,unsupported,0.381,0.0,0.77,"A representative item in the window reads: ""Tata Consultancy Services shares advanced after the company reported a stron"
+entity_swap,unsupported,unsupported,0.45,1.0,0.709,"The last close was ₹1325.9, against a 20-day simple moving average of ₹1314.42 and a 50-day average of ₹1334.15, accordi"
+numeric_swap,unsupported,unsupported,0.343,0.0,0.643,"Return on equity for the year was 23.04%, which the filing attributes to the company's asset-light operating model."
+numeric_swap,unsupported,unsupported,0.348,0.0,0.661,Annualised volatility of daily returns over the window was 49.4%.
+genuine,supported,supported,0.868,1.0,0.56,Historical one-day Value at Risk at the 95% confidence level was -1.93%.
+fabricated_detail,unsupported,unsupported,0.45,0.667,0.565,"RSI(14) is 23.8, which places the stock in oversold territory. The company also disclosed a one-time impairment of ₹4,18"
+fabricated_detail,unsupported,unsupported,0.45,0.833,0.609,"The last close was ₹3202.39, against a 20-day simple moving average of ₹3383.46 and a 50-day average of ₹3627.92. The bo"
+genuine,supported,supported,0.921,1.0,0.737,"The last close was ₹3202.39, against a 20-day simple moving average of ₹3383.46 and a 50-day average of ₹3627.92."
+genuine,supported,supported,0.828,1.0,0.427,The maximum drawdown within the window was -34.0%.
+genuine,supported,supported,0.902,1.0,0.674,"Across 12 indexed news items, 8 were classified positive, 4 negative and 0 neutral, giving a net sentiment score of 0.33"
+entity_swap,unsupported,unsupported,0.45,1.0,0.639,"Annualised volatility of daily returns over the window was 25.3%, according to Tata Consultancy Services's filing."
+genuine,supported,supported,0.836,1.0,0.452,"RSI(14) is 54.0, which places the stock in neutral territory."
+numeric_drift,unsupported,unsupported,0.45,0.5,0.452,"RSI(15.12) is 66.8, which places the stock in neutral territory."
+genuine,supported,supported,0.9,1.0,0.667,Dividend yield at the year-end closing price was approximately 1.6%.
+genuine,supported,supported,0.868,1.0,0.56,Historical one-day Value at Risk at the 95% confidence level was -2.6%.
+genuine,supported,supported,0.868,1.0,0.56,Historical one-day Value at Risk at the 95% confidence level was -2.6%.
+numeric_swap,unsupported,unsupported,0.36,0.0,0.7,"Return on equity for the year was 4.19%, which the filing attributes to the company's asset-light operating model."
+numeric_swap,unsupported,unsupported,0.28,0.0,0.434,The maximum drawdown within the window was -11.79%.
+fabricated_detail,unsupported,unsupported,0.45,0.5,0.718,"The consolidated debt-to-equity ratio was 0.09, and the filing records a net cash position through the year. The company"
+genuine,supported,supported,0.895,1.0,0.649,Annualised volatility of daily returns over the window was 25.3%.
+numeric_swap,unsupported,unsupported,0.45,0.5,0.601,"Consolidated revenue from operations was ₹71,271 cr, up 4.7% year on year."
+numeric_swap,unsupported,unsupported,0.283,0.0,0.443,The maximum drawdown within the window was -64.6%.
+numeric_drift,unsupported,unsupported,0.346,0.0,0.653,Annualised volatility of daily returns over the window was 21.85%.
+entity_swap,unsupported,unsupported,0.45,1.0,0.756,"Basic earnings per share were ₹134.2, according to Reliance Industries's filing."
+genuine,supported,supported,0.911,1.0,0.703,"Return on equity for the year was 51.2%, which the filing attributes to the company's asset-light operating model."
+numeric_swap,unsupported,unsupported,0.427,0.5,0.507,Total price return over the 478.8-session window was -6.7%.
+genuine,supported,supported,0.937,1.0,0.79,"Consolidated revenue from operations was ₹901,064 cr, up 7.1% year on year."
+genuine,supported,supported,0.881,1.0,0.603,Annualised volatility of daily returns over the window was 19.0%.
+genuine,supported,supported,0.934,1.0,0.781,"The consolidated debt-to-equity ratio was 0.09, and the filing records a net cash position through the year."
+genuine,supported,supported,0.93,1.0,0.767,Basic earnings per share were ₹134.2.
+entity_swap,unsupported,unsupported,0.45,1.0,0.625,"Dividend yield at the year-end closing price was approximately 1.6%, according to Infosys's filing."
+genuine,supported,supported,0.807,1.0,0.357,"The MACD line is 11.65 against a signal line of 1.68, giving a histogram of 9.98."
+genuine,supported,supported,0.713,1.0,0.545,Total price return over the 252-session window was -7.9%.
+entity_swap,unsupported,unsupported,0.45,1.0,0.481,"The 20-day Bollinger band runs from ₹1355.16 to ₹1511.46, according to Adani Green Energy's filing."
+genuine,supported,supported,0.932,1.0,0.772,"The last close was ₹1325.9, against a 20-day simple moving average of ₹1314.42 and a 50-day average of ₹1334.15."
+genuine,supported,supported,0.841,1.0,0.469,The maximum drawdown within the window was -25.7%.
+numeric_drift,unsupported,unsupported,0.45,0.5,0.724,"Operating margin for the year was 27.95%, a movement of -70 bps against the prior year."
+entity_swap,unsupported,unsupported,0.45,1.0,0.711,"The consolidated debt-to-equity ratio was 0.11, and the filing records a net cash position through the year, according t"
+genuine,supported,supported,0.936,1.0,0.787,"The consolidated debt-to-equity ratio was 0.11, and the filing records a net cash position through the year."
+genuine,supported,supported,0.868,1.0,0.56,Historical one-day Value at Risk at the 95% confidence level was -1.93%.
+genuine,supported,supported,0.923,1.0,0.742,"Operating margin for the year was 24.3%, a movement of -70 bps against the prior year."
+fabricated_detail,unsupported,unsupported,0.45,0.667,0.529,"RSI(14) is 54.0, which places the stock in neutral territory. The board approved a share buyback of ₹18,000 cr during th"
+numeric_swap,unsupported,unsupported,0.358,0.0,0.695,"Return on equity for the year was 97.28%, which the filing attributes to the company's asset-light operating model."
+genuine,supported,supported,0.809,1.0,0.365,"The MACD line is -9.58 against a signal line of -11.26, giving a histogram of 1.68."
+genuine,supported,supported,0.913,1.0,0.71,"Return on equity for the year was 31.8%, which the filing attributes to the company's asset-light operating model."
+numeric_swap,unsupported,unsupported,0.45,0.5,0.748,"Operating margin for the year was 32.11%, a movement of 40 bps against the prior year."
+genuine,supported,supported,0.797,1.0,0.323,"The MACD line is -109.65 against a signal line of -102.02, giving a histogram of -7.63."
+fabricated_detail,unsupported,unsupported,0.45,0.5,0.694,Annualised volatility of daily returns over the window was 22.7%. The company also disclosed a one-time impairment of ₹4
+numeric_drift,unsupported,unsupported,0.45,0.8,0.746,"The last close was ₹2,626, against a 20-day simple moving average of ₹3383.46 and a 50-day average of ₹3627.92."
+genuine,supported,supported,0.844,1.0,0.479,The 20-day Bollinger band runs from ₹3196.83 to ₹3570.09.
+genuine,supported,supported,0.86,1.0,0.534,Total price return over the 252-session window was -2.0%.
+numeric_drift,unsupported,unsupported,0.285,0.0,0.448,The maximum drawdown within the window was -22.62%.
+numeric_drift,unsupported,unsupported,0.45,0.8,0.679,"Across 9.84 indexed news items, 8 were classified positive, 4 negative and 0 neutral, giving a net sentiment score of 0."
+fabricated_detail,unsupported,unsupported,0.45,0.5,0.786,"The consolidated debt-to-equity ratio was 0.09, and the filing records a net cash position through the year. Attrition r"
+genuine,supported,supported,0.93,1.0,0.767,Basic earnings per share were ₹134.2.
+numeric_drift,unsupported,unsupported,0.383,0.0,0.777,"The consolidated debt-to-equity ratio was 0.48, and the filing records a net cash position through the year."
+genuine,supported,supported,0.869,1.0,0.562,Historical one-day Value at Risk at the 95% confidence level was -2.62%.
+genuine,supported,supported,0.89,1.0,0.634,"Across 12 indexed news items, 8 were classified positive, 4 negative and 0 neutral, giving a net sentiment score of 0.33"
+numeric_drift,unsupported,unsupported,0.45,0.5,0.719,"Operating margin for the year was 26.24%, a movement of -70 bps against the prior year."
+genuine,supported,supported,0.9,1.0,0.667,Dividend yield at the year-end closing price was approximately 1.6%.
+fabricated_detail,unsupported,unsupported,0.45,0.5,0.655,Dividend yield at the year-end closing price was approximately 0.4%. Attrition rose to 27.9% on a trailing twelve-month 
+genuine,supported,supported,0.923,1.0,0.742,"Operating margin for the year was 24.3%, a movement of -70 bps against the prior year."
+numeric_drift,unsupported,unsupported,0.359,0.0,0.698,"Return on equity for the year was 27.98%, which the filing attributes to the company's asset-light operating model."
+fabricated_detail,unsupported,unsupported,0.392,0.0,0.808,"A representative item in the window reads: ""Infosys shares advanced after the company reported a stronger-than-expected "
+genuine,supported,supported,0.841,1.0,0.469,The maximum drawdown within the window was -25.7%.
+genuine,supported,supported,0.933,1.0,0.776,"The consolidated debt-to-equity ratio was 0.44, and the filing records a net cash position through the year."
+numeric_drift,unsupported,unsupported,0.45,0.8,0.679,"Across 9.84 indexed news items, 8 were classified positive, 4 negative and 0 neutral, giving a net sentiment score of 0."
+entity_swap,unsupported,unsupported,0.45,1.0,0.353,"The MACD line is 11.65 against a signal line of 1.68, giving a histogram of 9.98, according to Adani Green Energy's fili"
+fabricated_detail,unsupported,unsupported,0.399,0.0,0.829,"A representative item in the window reads: ""Infosys shares advanced after the company reported a stronger-than-expected "
+genuine,supported,supported,0.936,1.0,0.899,"A representative item in the window reads: ""Infosys shares advanced after the company reported a stronger-than-expected "
+fabricated_detail,unsupported,unsupported,0.45,0.667,0.57,Historical one-day Value at Risk at the 95% confidence level was -2.6%. Management guided to an operating margin of 29.4
+genuine,supported,supported,0.911,1.0,0.703,"Return on equity for the year was 51.2%, which the filing attributes to the company's asset-light operating model."
+numeric_swap,unsupported,unsupported,0.45,0.5,0.564,Historical one-day Value at Risk at the 247% confidence level was -1.93%.
+numeric_drift,unsupported,unsupported,0.45,0.5,0.734,"Consolidated revenue from operations was ₹792,936 cr, up 7.1% year on year."
+entity_swap,unsupported,unsupported,0.45,1.0,0.621,"Across 12 indexed news items, 8 were classified positive, 4 negative and 0 neutral, giving a net sentiment score of 0.33"
+numeric_swap,unsupported,unsupported,0.45,0.5,0.563,Historical one-day Value at Risk at the 247% confidence level was -2.62%.
+genuine,supported,supported,0.902,1.0,0.674,Annualised volatility of daily returns over the window was 22.7%.
+genuine,supported,supported,0.927,1.0,0.756,"Operating margin for the year was 21.1%, a movement of 30 bps against the prior year."
+genuine,supported,supported,0.937,1.0,0.789,Basic earnings per share were ₹102.9.
+genuine,supported,supported,0.934,1.0,0.781,"The consolidated debt-to-equity ratio was 0.09, and the filing records a net cash position through the year."
+entity_swap,unsupported,unsupported,0.45,1.0,0.632,"Across 12 indexed news items, 8 were classified positive, 4 negative and 0 neutral, giving a net sentiment score of 0.33"

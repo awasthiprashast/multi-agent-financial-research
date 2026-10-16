@@ -1,0 +1,55 @@
+ticker,agent,claim,first_pass_status,first_pass_confidence,verifier_reason,oracle_numeric_ok,oracle_bad_numbers,surfaced_unrevised
+TCS.NS,fundamental,Tata Consultancy Services reported a return on equity of 51.2% for the year.,verified,0.959,,True,,True
+TCS.NS,fundamental,The company operated with a net cash position through the year.,verified,0.979,,True,,True
+TCS.NS,fundamental,Basic earnings per share for the year were ₹134.2.,verified,0.997,,True,,True
+TCS.NS,fundamental,The Board recommended a dividend yield of approximately 1.6% at the year-end closing price.,verified,0.997,,True,,True
+TCS.NS,fundamental,Tata Consultancy Services reported consolidated revenue growth of 6.8% for the financial year under review.,verified,0.992,,True,,True
+TCS.NS,technical,The closing price of Tata Consultancy Services (TCS.NS) is lower than the 20-day and 50-day simple moving averages.,verified,0.955,,True,,True
+TCS.NS,technical,The Relative Strength Index (RSI) of TCS.NS indicates oversold conditions with a value of 23.8.,verified,0.955,,True,,True
+TCS.NS,technical,"The MACD line is below the signal line for TCS.NS, suggesting a bearish signal.",verified,0.905,,True,,True
+TCS.NS,technical,"The closing price of TCS.NS has decreased significantly over the observed period, with the last close being lower than the start of the window.",verified,0.946,,True,,True
+TCS.NS,technical,"The Bollinger bands for TCS.NS suggest a high level of volatility, with the upper band being significantly higher than the lower band.",verified,0.781,,True,,True
+TCS.NS,sentiment,"The sentiment towards Tata Consultancy Services (TCS.NS) is neutral, as indicated by a net sentiment score of 0.0 from 12 indexed news items.",verified,0.992,,True,,True
+TCS.NS,sentiment,Tata Consultancy Services (TCS.NS) saw an advance in its share price following a stronger-than-expected order book report.,verified,0.969,,True,,True
+TCS.NS,sentiment,Analysts attribute the improved deal conversion in the BFSI segment at Tata Consultancy Services (TCS.NS) to the stronger-than-expected order book.,verified,0.984,,True,,True
+TCS.NS,risk,The annualized volatility of TCS.NS daily log returns over the given period is 19.0%.,verified,0.986,,True,,True
+TCS.NS,risk,The maximum drawdown for TCS.NS over the specified period was -25.7%.,verified,0.955,,True,,True
+TCS.NS,risk,The historical one-day Value at Risk for TCS.NS at the 95% level is -1.93%.,verified,0.991,,True,,True
+TCS.NS,risk,The total return for TCS.NS over the given period was -7.9%.,verified,0.902,,True,,True
+TCS.NS,risk,"Over the given period, TCS.NS experienced a significant maximum drawdown of 25.7%.",verified,0.967,,True,,True
+RELIANCE.NS,fundamental,"Reliance Industries reported a revenue of ₹901,064 cr for the financial year under review, representing a growth of 7.1% over the previous financial year.",verified,0.994,,True,,True
+RELIANCE.NS,fundamental,"The operating margin for Reliance Industries stood at 16.9% for the year, a 40 bps increase from the prior year.",verified,0.965,,True,,True
+RELIANCE.NS,fundamental,Reliance Industries' return on equity for the year was 9.3%.,verified,0.982,,True,,True
+RELIANCE.NS,fundamental,Reliance Industries operated with a net cash position through the year.,verified,0.959,,True,,True
+RELIANCE.NS,fundamental,The basic earnings per share for Reliance Industries were ₹102.9 for the year.,verified,0.978,,True,,True
+RELIANCE.NS,technical,"The closing price of Reliance Industries has decreased from the start to the end of the 252-session window, from ₹1421.06 to ₹1325.9.",verified,0.973,,True,,True
+RELIANCE.NS,technical,"The 20-day simple moving average of Reliance Industries is lower than the current closing price, suggesting a downward trend.",verified,0.955,,True,,True
+RELIANCE.NS,technical,"The RSI(14) of Reliance Industries is below 70, indicating that the stock may not be overbought.",verified,0.955,,True,,True
+RELIANCE.NS,technical,"The Bollinger band upper for Reliance Industries is higher than the current closing price, suggesting a potential ceiling for the stock.",verified,0.905,,True,,True
+RELIANCE.NS,technical,"The MACD line is below the signal line for Reliance Industries, with a significant difference, suggesting a bearish signal.",flagged,0.45,claim contradicts values recomputed from raw prices: MACD -9.58 vs signal -11.26,True,,False
+RELIANCE.NS,sentiment,"The tone of recent news about Reliance Industries is neutral, as the net sentiment score is 0.0.",verified,0.975,,True,,True
+RELIANCE.NS,sentiment,Reliance Industries' shares advanced due to a stronger-than-expected order book.,verified,0.995,,True,,True
+RELIANCE.NS,sentiment,Analysts attribute the advancement of Reliance Industries' shares to improving deal conversion in the BFSI segment.,verified,0.985,,True,,True
+RELIANCE.NS,risk,The annualized volatility of Reliance's daily log returns over the given period is 25.3%.,verified,0.987,,True,,True
+RELIANCE.NS,risk,The maximum drawdown for Reliance over the specified period was -34.0%.,verified,0.962,,True,,True
+RELIANCE.NS,risk,The historical one-day Value at Risk for Reliance at the 95% level is -2.6%.,verified,0.991,,True,,True
+RELIANCE.NS,risk,The total return for Reliance over the given period was -6.7%.,verified,0.915,,True,,True
+RELIANCE.NS,risk,"Over the analyzed period, Reliance had a maximum one-day potential loss of 2.6% at the 95% Value at Risk level.",verified,0.982,,True,,True
+RELIANCE.NS,technical,"The MACD line for Reliance Industries is -9.58, while the signal line is -11.26, according to the computed trend indicators.",revised-output,0.953,,True,,True
+INFY.NS,fundamental,Infosys (INFY.NS) reported a return on equity of 31.8% for the year.,verified,0.973,,True,,True
+INFY.NS,fundamental,Infosys (INFY.NS) operated with a net cash position throughout the year.,verified,0.949,,True,,True
+INFY.NS,fundamental,Infosys (INFY.NS) reported a basic earnings per share of ₹63.4 for the year.,verified,0.974,,True,,True
+INFY.NS,fundamental,Infosys (INFY.NS) recommended a final dividend that corresponds to a dividend yield of approximately 2.4% at the year-end closing price.,verified,0.998,,True,,True
+INFY.NS,fundamental,"Infosys (INFY.NS) reported consolidated revenue from operations of ₹158,381 cr for the financial year under review, representing a growth of 4.7% over the previous financial year.",verified,0.997,,True,,True
+INFY.NS,technical,The closing price of Infosys (INFY.NS) is higher than the 20-day simple moving average but lower than the 50-day simple moving average.,flagged,0.45,claim contradicts values recomputed from raw prices: close 1512.37 vs sma_50 1421.63,True,,False
+INFY.NS,technical,"The Relative Strength Index (RSI) for Infosys indicates that the stock is neither overbought nor oversold, with a value of 66.8.",verified,0.886,,True,,True
+INFY.NS,technical,"The MACD histogram for Infosys suggests a bullish signal, as the MACD line is higher than the signal line.",verified,0.905,,True,,True
+INFY.NS,technical,"The Bollinger bands for Infosys indicate a wide range of price fluctuations, with the upper band at ₹1511.46 and the lower band at ₹1355.16.",verified,0.934,,True,,True
+INFY.NS,technical,"Over the past 252 trading sessions, the closing price of Infosys has decreased from ₹1543.32 to ₹1512.37.",verified,0.982,,True,,True
+INFY.NS,sentiment,"The tone of recent news about Infosys is neutral, as there are equal numbers of positive and negative news items.",verified,0.975,,True,,True
+INFY.NS,sentiment,"Infosys' shares advanced due to a stronger-than-expected order book, as reported in a recent news item.",verified,0.99,,True,,True
+INFY.NS,sentiment,"Analysts attribute the positive movement in Infosys' shares to improving deal conversion in the BFSI segment, as mentioned in a recent news item.",verified,0.936,,True,,True
+INFY.NS,risk,The annualized volatility of INFY.NS's daily log returns over the given period is 22.7%.,verified,0.985,,True,,True
+INFY.NS,risk,The maximum drawdown for INFY.NS over the specified period was -26.2%.,verified,0.956,,True,,True
+INFY.NS,risk,The historical one-day Value at Risk for INFY.NS at the 95% level is -2.62%.,verified,0.989,,True,,True
+INFY.NS,risk,The total return for INFY.NS over the given period was -2.0%.,verified,0.906,,True,,True

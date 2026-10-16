@@ -1,0 +1,341 @@
+{
+  "generated_at": "2026-10-17 00:30:22",
+  "corpus_mode": "snapshot",
+  "embedder": "tfidf-svd-256",
+  "sentiment_scorer": "financial lexicon (offline fallback)",
+  "retrieval_backend": "chromadb",
+  "chunks_indexed": 66,
+  "grounding": {
+    "reports": 8,
+    "claims_generated": 81,
+    "claims_surfaced": 81,
+    "grounding_rate": 1.0,
+    "mean_confidence": 0.983,
+    "per_report": [
+      {
+        "query": "Should I look at TCS for a 1-year hold?",
+        "ticker": "TCS.NS",
+        "agents": 4,
+        "claims_generated": 16,
+        "claims_surfaced": 16,
+        "grounding_rate": 1.0,
+        "mean_confidence": 0.9801,
+        "total_s": 3.1479,
+        "verify_s": 0.0918
+      },
+      {
+        "query": "Give me a full research report on Reliance",
+        "ticker": "RELIANCE.NS",
+        "agents": 4,
+        "claims_generated": 16,
+        "claims_surfaced": 16,
+        "grounding_rate": 1.0,
+        "mean_confidence": 0.9784,
+        "total_s": 0.195,
+        "verify_s": 0.0831
+      },
+      {
+        "query": "Complete analysis of Infosys",
+        "ticker": "INFY.NS",
+        "agents": 4,
+        "claims_generated": 16,
+        "claims_surfaced": 16,
+        "grounding_rate": 1.0,
+        "mean_confidence": 0.9776,
+        "total_s": 0.2059,
+        "verify_s": 0.0954
+      },
+      {
+        "query": "Is TCS cheap and is the chart supportive?",
+        "ticker": "TCS.NS",
+        "agents": 2,
+        "claims_generated": 11,
+        "claims_surfaced": 11,
+        "grounding_rate": 1.0,
+        "mean_confidence": 0.9777,
+        "total_s": 0.0832,
+        "verify_s": 0.0575
+      },
+      {
+        "query": "How volatile is Reliance?",
+        "ticker": "RELIANCE.NS",
+        "agents": 1,
+        "claims_generated": 3,
+        "claims_surfaced": 3,
+        "grounding_rate": 1.0,
+        "mean_confidence": 0.9787,
+        "total_s": 0.0203,
+        "verify_s": 0.0144
+      },
+      {
+        "query": "What is the news sentiment on Infosys?",
+        "ticker": "INFY.NS",
+        "agents": 1,
+        "claims_generated": 2,
+        "claims_surfaced": 2,
+        "grounding_rate": 1.0,
+        "mean_confidence": 0.995,
+        "total_s": 0.0133,
+        "verify_s": 0.012
+      },
+      {
+        "query": "Fundamentals and news flow for TCS",
+        "ticker": "TCS.NS",
+        "agents": 2,
+        "claims_generated": 8,
+        "claims_surfaced": 8,
+        "grounding_rate": 1.0,
+        "mean_confidence": 0.9905,
+        "total_s": 0.0624,
+        "verify_s": 0.0424
+      },
+      {
+        "query": "Compare Reliance and TCS on fundamentals and risk",
+        "ticker": "TCS.NS",
+        "agents": 2,
+        "claims_generated": 9,
+        "claims_surfaced": 9,
+        "grounding_rate": 1.0,
+        "mean_confidence": 0.9857,
+        "total_s": 0.0689,
+        "verify_s": 0.044
+      }
+    ]
+  },
+  "hallucination": {
+    "benchmark_size": 162,
+    "true_positive": 81,
+    "false_positive": 0,
+    "true_negative": 81,
+    "false_negative": 0,
+    "catch_rate_recall": 1.0,
+    "precision": 1.0,
+    "f1": 1.0,
+    "accuracy": 1.0,
+    "false_positive_rate": 0.0,
+    "ms_per_claim": 5.59,
+    "by_perturbation": {
+      "entity_swap": {
+        "caught": 20,
+        "missed": 0,
+        "rate": 1.0
+      },
+      "numeric_drift": {
+        "caught": 20,
+        "missed": 0,
+        "rate": 1.0
+      },
+      "numeric_swap": {
+        "caught": 19,
+        "missed": 0,
+        "rate": 1.0
+      },
+      "genuine": {
+        "caught": 81,
+        "missed": 0,
+        "rate": 1.0
+      },
+      "fabricated_detail": {
+        "caught": 22,
+        "missed": 0,
+        "rate": 1.0
+      }
+    }
+  },
+  "ablation": {
+    "full mechanism": {
+      "catch_rate": 1.0,
+      "precision": 1.0,
+      "f1": 1.0,
+      "accuracy": 1.0,
+      "false_positive_rate": 0.0
+    },
+    "no numeric veto (additive scoring)": {
+      "catch_rate": 0.4815,
+      "precision": 1.0,
+      "f1": 0.65,
+      "accuracy": 0.7407,
+      "false_positive_rate": 0.0
+    },
+    "no entity binding": {
+      "catch_rate": 0.7531,
+      "precision": 1.0,
+      "f1": 0.8592,
+      "accuracy": 0.8765,
+      "false_positive_rate": 0.0
+    },
+    "semantic similarity only": {
+      "catch_rate": 0.0,
+      "precision": 0.0,
+      "f1": 0.0,
+      "accuracy": 0.5,
+      "false_positive_rate": 0.0
+    },
+    "citation trust only (no re-retrieval check)": {
+      "catch_rate": 0.0,
+      "precision": 0.0,
+      "f1": 0.0,
+      "accuracy": 0.5,
+      "false_positive_rate": 0.0
+    }
+  },
+  "threshold_sweep": [
+    {
+      "theta": 0.2,
+      "catch_rate": 0.0,
+      "precision": 1.0,
+      "f1": 0.0,
+      "genuine_claims_retained": 1.0
+    },
+    {
+      "theta": 0.25,
+      "catch_rate": 0.0,
+      "precision": 1.0,
+      "f1": 0.0,
+      "genuine_claims_retained": 1.0
+    },
+    {
+      "theta": 0.3,
+      "catch_rate": 0.0,
+      "precision": 1.0,
+      "f1": 0.0,
+      "genuine_claims_retained": 1.0
+    },
+    {
+      "theta": 0.35,
+      "catch_rate": 0.0,
+      "precision": 1.0,
+      "f1": 0.0,
+      "genuine_claims_retained": 1.0
+    },
+    {
+      "theta": 0.4,
+      "catch_rate": 0.0,
+      "precision": 1.0,
+      "f1": 0.0,
+      "genuine_claims_retained": 1.0
+    },
+    {
+      "theta": 0.45,
+      "catch_rate": 0.2346,
+      "precision": 1.0,
+      "f1": 0.38,
+      "genuine_claims_retained": 1.0
+    },
+    {
+      "theta": 0.5,
+      "catch_rate": 1.0,
+      "precision": 1.0,
+      "f1": 1.0,
+      "genuine_claims_retained": 1.0
+    },
+    {
+      "theta": 0.55,
+      "catch_rate": 1.0,
+      "precision": 1.0,
+      "f1": 1.0,
+      "genuine_claims_retained": 1.0
+    },
+    {
+      "theta": 0.6,
+      "catch_rate": 1.0,
+      "precision": 1.0,
+      "f1": 1.0,
+      "genuine_claims_retained": 1.0
+    },
+    {
+      "theta": 0.65,
+      "catch_rate": 1.0,
+      "precision": 1.0,
+      "f1": 1.0,
+      "genuine_claims_retained": 1.0
+    },
+    {
+      "theta": 0.7,
+      "catch_rate": 1.0,
+      "precision": 1.0,
+      "f1": 1.0,
+      "genuine_claims_retained": 1.0
+    },
+    {
+      "theta": 0.75,
+      "catch_rate": 1.0,
+      "precision": 1.0,
+      "f1": 1.0,
+      "genuine_claims_retained": 1.0
+    },
+    {
+      "theta": 0.8,
+      "catch_rate": 1.0,
+      "precision": 1.0,
+      "f1": 1.0,
+      "genuine_claims_retained": 1.0
+    },
+    {
+      "theta": 0.85,
+      "catch_rate": 1.0,
+      "precision": 1.0,
+      "f1": 1.0,
+      "genuine_claims_retained": 1.0
+    },
+    {
+      "theta": 0.9,
+      "catch_rate": 1.0,
+      "precision": 1.0,
+      "f1": 1.0,
+      "genuine_claims_retained": 1.0
+    }
+  ],
+  "router": {
+    "queries": 75,
+    "exact_match_accuracy": 0.9467,
+    "label_recall": 0.9915,
+    "mean_jaccard": 0.9733,
+    "agents_invoked_total": 119,
+    "agents_if_no_routing": 300,
+    "agent_invocation_reduction_pct": 60.33
+  },
+  "router_heldout": {
+    "queries": 30,
+    "exact_match_accuracy": 0.9,
+    "label_recall": 0.9388,
+    "mean_jaccard": 0.95,
+    "agent_invocation_reduction_pct": 60.83,
+    "note": "held-out: never used to tune features, lexicon or training data"
+  },
+  "sentiment": {
+    "model": "financial lexicon (offline fallback)",
+    "heldout_items": 48,
+    "heldout_accuracy": 0.4792,
+    "heldout_macro_f1": 0.4575,
+    "confusion": {
+      "positive": {
+        "positive": 7,
+        "neutral": 7,
+        "negative": 2
+      },
+      "negative": {
+        "negative": 4,
+        "neutral": 8,
+        "positive": 4
+      },
+      "neutral": {
+        "neutral": 12,
+        "positive": 3,
+        "negative": 1
+      }
+    },
+    "snapshot_sanity_accuracy": 1.0,
+    "snapshot_sanity_items": 36,
+    "note": "held-out accuracy is the reportable figure; the snapshot check only confirms the scoring path is wired correctly and is not a model benchmark. FinBERT replaces the fallback scorer wherever the model weights are available."
+  },
+  "cost_latency": {
+    "routed_mean_total_s": 0.0709,
+    "unrouted_mean_total_s": 0.1085,
+    "routed_mean_verify_s": 0.0507,
+    "routed_mean_agents_s": 0.0192,
+    "latency_reduction_pct": 34.65,
+    "external_api_cost_usd_per_report": 0.0,
+    "note": "all inference is local or free-tier; monetary cost per report is zero by construction"
+  }
+}

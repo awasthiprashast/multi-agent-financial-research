@@ -1,0 +1,7 @@
+{
+  "queries": 30,
+  "exact_match": 0.9,
+  "label_recall": 0.9388,
+  "mean_jaccard": 0.95,
+  "agent_invocation_reduction_pct": 60.83
+}

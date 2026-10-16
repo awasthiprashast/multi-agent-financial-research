@@ -1,0 +1,27 @@
+name: tests
+on: [push, pull_request]
+env:
+  # deterministic offline backends: same result on every machine
+  FINRESEARCH_EMBEDDER: tfidf
+  FINRESEARCH_SCORER: lexicon
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.11"}
+      - run: pip install numpy pandas scikit-learn scipy chromadb requests fastapi httpx pytest
+      - run: python -m pytest tests/ -q
+      - run: python -m eval.run_all --offline --out ci_metrics.json
+      - name: metrics must not regress
+        run: |
+          python - <<'PY'
+          import json
+          m = json.load(open("results/ci_metrics.json"))
+          h = m["hallucination"]
+          assert h["catch_rate_recall"] >= 0.95, h["catch_rate_recall"]
+          assert h["false_positive_rate"] <= 0.02, h["false_positive_rate"]
+          assert m["grounding"]["grounding_rate"] >= 0.99, m["grounding"]["grounding_rate"]
+          print("ok", h["catch_rate_recall"], h["false_positive_rate"])
+          PY

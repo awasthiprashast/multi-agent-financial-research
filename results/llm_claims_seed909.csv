@@ -1,0 +1,62 @@
+ticker,agent,claim,first_pass_status,first_pass_confidence,verifier_reason,oracle_numeric_ok,oracle_bad_numbers,surfaced_unrevised
+TCS.NS,fundamental,Tata Consultancy Services reported a return on equity of 51.2% for the year.,verified,0.959,,True,,True
+TCS.NS,fundamental,The consolidated debt-to-equity ratio of Tata Consultancy Services stood at 0.09 as at the balance sheet date.,verified,0.995,,True,,True
+TCS.NS,fundamental,Basic earnings per share for Tata Consultancy Services were ₹134.2 for the year.,verified,0.975,,True,,True
+TCS.NS,fundamental,The Board of Tata Consultancy Services recommended a final dividend which corresponds to a dividend yield of approximately 1.6% at the year-end closing price.,verified,0.997,,True,,True
+TCS.NS,fundamental,"Tata Consultancy Services reported consolidated revenue from operations of ₹240,893 cr for the financial year under review, representing growth of 6.8% over the previous financial year.",verified,0.998,,True,,True
+TCS.NS,technical,"The closing price of Tata Consultancy Services (TCS.NS) is lower than the 20-day and 50-day simple moving averages, indicating a downward trend.",verified,0.955,,True,,True
+TCS.NS,technical,"The Relative Strength Index (RSI) of TCS.NS is below 30, suggesting that the stock may be oversold and could potentially experience a rebound.",verified,0.955,,True,,True
+TCS.NS,technical,"The MACD line is below the signal line for TCS.NS, indicating a bearish signal.",verified,0.905,,True,,True
+TCS.NS,technical,"The Bollinger bands for TCS.NS indicate that the stock's price has been trading close to the lower band, suggesting potential volatility or oversold conditions.",verified,0.723,,True,,True
+TCS.NS,technical,"Over the observed period, the closing price of TCS.NS has decreased significantly, from ₹3477.99 at the start of the window to ₹3202.39 at the end, representing a return of approximately -7.5%.",flagged,0.45,no matching value in retrieved evidence for: -7.5%,False,-7.5%,False
+TCS.NS,sentiment,"The tone of recent news about Tata Consultancy Services (TCS.NS) is neutral, as indicated by a net sentiment score of 0.0 derived from 12 indexed news items.",verified,0.99,,True,,True
+TCS.NS,sentiment,One of the recent news items about Tata Consultancy Services (TCS.NS) reports that the company's shares advanced due to a stronger-than-expected order book.,verified,0.948,,True,,True
+TCS.NS,sentiment,"Analysts, in relation to the stronger-than-expected order book of Tata Consultancy Services (TCS.NS), have pointed to improving deal conversion in the BFSI segment.",verified,0.988,,True,,True
+TCS.NS,risk,The annualized volatility of TCS.NS's daily log returns over the given period is 19.0%.,verified,0.986,,True,,True
+TCS.NS,risk,The maximum drawdown for TCS.NS over the specified period was -25.7%.,verified,0.955,,True,,True
+TCS.NS,risk,Historical one-day Value at Risk for TCS.NS at the 95% level is -1.93%.,verified,0.991,,True,,True
+TCS.NS,risk,The total return for TCS.NS over the given period was -7.9%.,verified,0.902,,True,,True
+TCS.NS,risk,"Over the analyzed period, TCS.NS had a maximum one-day potential loss of 1.93% at the 95% Value at Risk level.",verified,0.984,,True,,True
+TCS.NS,technical,"Over the observed period, the closing price of TCS.NS has decreased from ₹3477.99 at the start of the window to ₹3202.39 at the end, but the exact percentage decrease is not provided in the evidence.",revised-output,0.973,,True,,True
+RELIANCE.NS,fundamental,Reliance Industries reported a return on equity of 9.3% for the year.,verified,0.96,,True,,True
+RELIANCE.NS,fundamental,The company operated with a net cash position through the year.,verified,0.981,,True,,True
+RELIANCE.NS,fundamental,Basic earnings per share for the year were ₹102.9.,verified,0.996,,True,,True
+RELIANCE.NS,fundamental,The Board recommended a dividend yield of approximately 0.4% at the year-end closing price.,verified,0.997,,True,,True
+RELIANCE.NS,fundamental,Reliance Industries reported consolidated revenue growth of 7.1% for the financial year under review.,verified,0.993,,True,,True
+RELIANCE.NS,technical,The closing price of Reliance Industries is lower than the 20-day simple moving average.,flagged,0.45,claim contradicts values recomputed from raw prices: close 1325.9 vs sma_20 1314.42,True,,False
+RELIANCE.NS,technical,"The RSI value for Reliance Industries is below 70, indicating the stock may not be overbought.",verified,0.955,,True,,True
+RELIANCE.NS,technical,The closing price of Reliance Industries is higher than the 50-day simple moving average.,flagged,0.45,claim contradicts values recomputed from raw prices: close 1325.9 vs sma_50 1334.15,True,,False
+RELIANCE.NS,technical,"The MACD line is below the signal line for Reliance Industries, suggesting a bearish signal.",flagged,0.45,claim contradicts values recomputed from raw prices: MACD -9.58 vs signal -11.26,True,,False
+RELIANCE.NS,technical,"The Bollinger band upper limit for Reliance Industries is higher than the closing price, suggesting potential for price increase.",verified,0.905,,True,,True
+RELIANCE.NS,sentiment,"The tone of recent news about Reliance Industries is neutral, as indicated by a net sentiment score of 0.0 from 12 indexed news items.",verified,0.992,,True,,True
+RELIANCE.NS,sentiment,"Reliance Industries' shares advanced due to a stronger-than-expected order book, as reported by the company.",verified,0.994,,True,,True
+RELIANCE.NS,sentiment,Analysts attribute the advance in Reliance Industries' shares to improving deal conversion in the BFSI segment.,verified,0.986,,True,,True
+RELIANCE.NS,risk,The annualized volatility of Reliance's daily log returns over the given period is 25.3%.,verified,0.987,,True,,True
+RELIANCE.NS,risk,The maximum drawdown for Reliance over the specified period was -34.0%.,verified,0.962,,True,,True
+RELIANCE.NS,risk,The historical one-day Value at Risk for Reliance at the 95% level is -2.6%.,verified,0.991,,True,,True
+RELIANCE.NS,risk,The total return for Reliance over the given period was -6.7%.,verified,0.915,,True,,True
+RELIANCE.NS,risk,The historical one-day maximum loss that could be expected to occur 5% of the time for Reliance is -2.6%.,flagged,0.45,no matching value in retrieved evidence for: 5%,False,5%,False
+RELIANCE.NS,risk,"Over the given period, the daily log returns of Reliance had a volatility that equates to an annualized rate of 25.3%.",verified,0.972,,True,,True
+RELIANCE.NS,technical,The closing price of Reliance Industries is higher than the 20-day simple moving average as per the computed values.,revised-output,0.955,,True,,True
+RELIANCE.NS,technical,The closing price of Reliance Industries is lower than the 50-day simple moving average.,revised-output,0.955,,True,,True
+RELIANCE.NS,technical,"The MACD line for Reliance Industries is -9.58, and the signal line is -11.26.",revised-output,0.908,,True,,True
+RELIANCE.NS,risk,The historical one-day Value at Risk at the 95% level for Reliance is -2.6%.,revised-output,0.991,,True,,True
+INFY.NS,fundamental,Infosys (INFY.NS) reported a return on equity of 31.8% for the year.,verified,0.973,,True,,True
+INFY.NS,fundamental,Infosys (INFY.NS) operated with a net cash position throughout the year.,verified,0.949,,True,,True
+INFY.NS,fundamental,"Infosys (INFY.NS) reported a consolidated revenue of ₹158,381 cr for the financial year under review, representing a growth of 4.7% over the previous financial year.",verified,0.996,,True,,True
+INFY.NS,fundamental,"Infosys (INFY.NS) reported an operating margin of 21.1% for the year, a 30 bps increase from the prior year.",verified,0.961,,True,,True
+INFY.NS,fundamental,"Infosys (INFY.NS) declared a final dividend for the year, resulting in a dividend yield of approximately 2.4% at the year-end closing price.",verified,0.995,,True,,True
+INFY.NS,technical,The 20-day simple moving average for Infosys (INFY.NS) is lower than the current closing price.,verified,0.955,,True,,True
+INFY.NS,technical,"The RSI(14) for Infosys (INFY.NS) is above the 70 threshold, indicating that the stock may be overbought.",flagged,0.45,claim contradicts values recomputed from raw prices: RSI 66.8 vs 70,True,,False
+INFY.NS,technical,"The MACD line for Infosys (INFY.NS) is significantly higher than the signal line, suggesting a potential bullish signal.",verified,0.766,,True,,True
+INFY.NS,technical,"The Bollinger band upper for Infosys (INFY.NS) is higher than the current closing price, indicating that the stock may be approaching resistance.",flagged,0.45,claim contradicts values recomputed from raw prices: upper band 1511.46 vs close 1512.37,True,,False
+INFY.NS,technical,"Over the 252 trading sessions, the closing price for Infosys (INFY.NS) has decreased from ₹1543.32 to ₹1512.37.",verified,0.98,,True,,True
+INFY.NS,sentiment,"The tone of recent news about INFY.NS is neutral, as the net sentiment score is 0.0.",verified,0.992,,True,,True
+INFY.NS,sentiment,Infosys shares advanced due to a stronger-than-expected order book.,verified,0.997,,True,,True
+INFY.NS,sentiment,Analysts attribute the positive movement in Infosys shares to improving deal conversion in the BFSI segment.,verified,0.965,,True,,True
+INFY.NS,risk,The annualized volatility of INFY.NS's daily log returns over the given period is 22.7%.,verified,0.985,,True,,True
+INFY.NS,risk,The maximum drawdown for INFY.NS over the specified period was -26.2%.,verified,0.956,,True,,True
+INFY.NS,risk,The historical one-day Value at Risk for INFY.NS at the 95% level is -2.62%.,verified,0.989,,True,,True
+INFY.NS,risk,The total return for INFY.NS over the given period was -2.0%.,verified,0.906,,True,,True
+INFY.NS,technical,"The RSI(14) for Infosys (INFY.NS) is 66.8, according to the computed trend indicators over 2026-01-01 to 2026-12-28 (252 sessions).",revised-output,0.949,,True,,True
+INFY.NS,technical,"The Bollinger band upper for Infosys (INFY.NS) is ₹1511.46, according to the computed trend indicators over 2026-01-01 to 2026-12-28 (252 sessions).",revised-output,0.964,,True,,True
