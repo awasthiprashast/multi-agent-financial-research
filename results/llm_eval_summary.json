@@ -1,10 +1,10 @@
 {
-  "llm_claims": 267,
-  "claims_flagged_first_pass": 28,
-  "claims_with_a_wrong_number_per_oracle": 3,
+  "llm_claims": 259,
+  "claims_flagged_first_pass": 22,
+  "claims_with_a_wrong_number_per_oracle": 1,
   "wrong_numbers_that_reached_the_report": 0,
-  "revisions_attempted": 30,
-  "revisions_successful": 26,
+  "revisions_attempted": 26,
+  "revisions_successful": 18,
   "runs": 5,
   "seeds": [
     7,
@@ -13,5 +13,5 @@
     555,
     909
   ],
-  "first_pass_flag_rate": 0.1049
+  "first_pass_flag_rate": 0.0849
 }

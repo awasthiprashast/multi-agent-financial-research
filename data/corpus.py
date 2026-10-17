@@ -20,12 +20,16 @@ what the deployed system runs on. Both go through exactly the same agents.
 
 from __future__ import annotations
 
+import logging
 import math
 import random
 import zlib
 from typing import Dict, List, Tuple
 
 from core import Chunk
+from data.universe import BY_TICKER, NAME, mentions
+
+log = logging.getLogger(__name__)
 
 SEED = 20260902
 
@@ -56,11 +60,11 @@ GROUND_TRUTH: Dict[str, Dict[str, float]] = {
     },
 }
 
-COMPANY_NAME = {
-    "TCS.NS": "Tata Consultancy Services",
-    "RELIANCE.NS": "Reliance Industries",
-    "INFY.NS": "Infosys",
-}
+COMPANY_NAME = NAME                    # display names; single list in data/universe.py
+
+
+class DataUnavailableError(RuntimeError):
+    """No live data could be fetched and there is no offline snapshot to fall back on."""
 
 
 # --------------------------------------------------------------------------
@@ -177,6 +181,53 @@ def _price_series(ticker: str, n: int = 252) -> Dict[str, list]:
     }
 
 
+def statements_chunk(ticker: str, stmt: dict):
+    """One evidence chunk of annual financials, every ratio computed here in Python.
+
+    Sentences are short and carry one label each ("Operating margin is 25.1%.") so
+    the verifier's label binding can match a claim to exactly the right number."""
+    if not stmt or (stmt.get("currency") or "INR") != "INR" or not stmt.get("years"):
+        return None
+    y0 = stmt["years"][0]
+    y1 = stmt["years"][1] if len(stmt["years"]) > 1 else {}
+    cr = lambda v: v / 1e7                                    # rupees -> crore
+
+    s: List[str] = []
+    if y0.get("revenue"):
+        s.append(f"Total revenue is ₹{cr(y0['revenue']):,.0f} cr.")
+        if y1.get("revenue"):
+            g = (y0["revenue"] / y1["revenue"] - 1) * 100
+            s.append(f"Revenue growth over the prior fiscal year is {g:.1f}%.")
+            s.append(f"Prior-year total revenue was ₹{cr(y1['revenue']):,.0f} cr.")
+        if y0.get("operating_income"):
+            s.append(f"Operating margin is {y0['operating_income'] / y0['revenue'] * 100:.1f}%.")
+        if y0.get("net_income"):
+            s.append(f"Net margin is {y0['net_income'] / y0['revenue'] * 100:.1f}%.")
+    if y0.get("net_income"):
+        s.append(f"Net income is ₹{cr(y0['net_income']):,.0f} cr.")
+    if y0.get("eps"):
+        s.append(f"Basic earnings per share is ₹{y0['eps']:.2f}.")
+        if y1.get("eps"):
+            s.append(f"Prior-year basic earnings per share was ₹{y1['eps']:.2f}.")
+    # Banks and lenders report no operating income, and their "debt" includes deposits,
+    # so a debt-to-equity ratio would mislead: only state it for non-financial companies.
+    if y0.get("total_debt") is not None and y0.get("equity") and y0.get("operating_income"):
+        s.append(f"Debt-to-equity ratio is {y0['total_debt'] / y0['equity']:.2f}.")
+    if y0.get("net_income") and y0.get("equity"):
+        s.append(f"Return on equity is {y0['net_income'] / y0['equity'] * 100:.1f}%.")
+    if not s:
+        return None
+    name = COMPANY_NAME.get(ticker, ticker)
+    text = (f"Annual financials for {name} from Yahoo Finance statements, fiscal year ended "
+            f"{y0['end']}. " + " ".join(s) +
+            " Return on equity is net income divided by year-end equity; debt-to-equity is "
+            "total debt divided by equity.")
+    src = f"financials_{ticker}"
+    return Chunk(chunk_id=Chunk.make_id(src, text), text=text, source=src,
+                 doc_type="fundamentals", ticker=ticker, published=y0["end"],
+                 meta={"provenance": "yfinance-statements", "fiscal_year_end": y0["end"]})
+
+
 def _live_fundamentals_chunk(ticker: str):
     """Real headline fundamentals (Yahoo Finance) as one evidence chunk, or None."""
     try:
@@ -211,6 +262,54 @@ def _live_fundamentals_chunk(ticker: str):
                  meta={"provenance": f.get("provenance", "yfinance.info")})
 
 
+LIVE_NEWS_DAYS = 30
+LIVE_NEWS_MAX = 40
+
+
+def _live_news_chunks(ticker: str, rss_fallback) -> List[Chunk]:
+    """Recent headlines that name the company: Google News search, falling back to
+    the plain RSS feeds if that is unreachable. Headlines only (no article bodies)."""
+    import datetime as dt
+
+    co = BY_TICKER.get(ticker)
+    items: List[dict] = []
+    try:
+        from data.connectors.gnews import fetch_range
+
+        end = dt.date.today()
+        start = end - dt.timedelta(days=LIVE_NEWS_DAYS)
+        raw = fetch_range(co.news_query if co else COMPANY_NAME.get(ticker, ticker),
+                          start, end, window_days=15)
+        named = [i for i in raw if mentions(i["title"], ticker)]
+        named.sort(key=lambda i: i["seendate"], reverse=True)
+        for i in named[:LIVE_NEWS_MAX]:
+            d = i["seendate"]
+            items.append({"text": i["title"], "source": i.get("source") or "google-news",
+                          "url": i.get("url", ""),
+                          "published": f"{d[0:4]}-{d[4:6]}-{d[6:8]}",
+                          "provenance": "google-news-rss"})
+    except Exception as exc:
+        log.warning("Google News unavailable for %s (%s); trying plain RSS", ticker, exc)
+
+    if not items:
+        try:
+            for it in rss_fallback(COMPANY_NAME.get(ticker, ticker)) or []:
+                items.append({"text": f"{it['title']}. {it['summary']}",
+                              "source": it.get("link", "rss"), "url": it.get("link", ""),
+                              "published": it.get("published", ""), "provenance": "rss-live"})
+        except Exception as exc:
+            log.warning("RSS fallback failed for %s (%s)", ticker, exc)
+
+    chunks: List[Chunk] = []
+    for n, it in enumerate(items):
+        src = f"news_{ticker}_{n:03d}"
+        chunks.append(Chunk(
+            chunk_id=Chunk.make_id(src, it["text"]), text=it["text"], source=src,
+            doc_type="news", ticker=ticker, published=it["published"],
+            meta={"provenance": it["provenance"], "publisher": it["source"], "url": it["url"]}))
+    return chunks
+
+
 # --------------------------------------------------------------------------
 # Public API
 # --------------------------------------------------------------------------
@@ -229,20 +328,19 @@ def load_corpus(ticker: str, prefer_live: bool = True):
             prices = fetch_prices(ticker)
             if prices:
                 mode = "live"
-                live_news = fetch_news(COMPANY_NAME.get(ticker, ticker)) or []
-                for i, item in enumerate(live_news):
-                    text = f"{item['title']}. {item['summary']}"
-                    chunks.append(Chunk(
-                        chunk_id=Chunk.make_id(f"news_live_{i:03d}", text),
-                        text=text, source=item.get("link", "rss"),
-                        doc_type="news", ticker=ticker,
-                        published=item.get("published", ""),
-                        meta={"provenance": "rss-live"},
-                    ))
-        except Exception:
+                chunks.extend(_live_news_chunks(ticker, fetch_news))
+        except Exception as exc:
+            log.warning("live data for %s failed (%s)", ticker, exc)
             prices = None
 
     if prices is None:
+        if ticker not in GROUND_TRUTH:
+            raise DataUnavailableError(
+                f"no live prices for {ticker} and no offline snapshot exists for it "
+                f"(snapshot companies: {', '.join(GROUND_TRUTH)})")
+        if prefer_live:
+            log.warning("falling back to the SYNTHETIC snapshot for %s; the report will "
+                        "say corpus=snapshot", ticker)
         prices = _price_series(ticker)
 
     news_gold: Dict[str, str] = {}
@@ -260,6 +358,14 @@ def load_corpus(ticker: str, prefer_live: bool = True):
         fund_chunk = _live_fundamentals_chunk(ticker)
         if fund_chunk is not None:
             chunks.append(fund_chunk)
+        try:
+            from data.connectors.live import fetch_statements
+            stmt_chunk = statements_chunk(ticker, fetch_statements(ticker))
+        except Exception as exc:
+            log.warning("statements for %s unavailable (%s)", ticker, exc)
+            stmt_chunk = None
+        if stmt_chunk is not None:
+            chunks.append(stmt_chunk)
 
     if mode == "snapshot":
         for src, text, label in _news_items(ticker, rng):

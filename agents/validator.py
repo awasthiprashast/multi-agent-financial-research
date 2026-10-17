@@ -59,6 +59,7 @@ from typing import Dict, List, Optional, Tuple
 
 from agents.data_collector import DataCollectionAgent
 from core import NUM_RE, Claim, NumericFact, Verdict, extract_numbers
+from data.universe import COMPANIES
 from rag.store import EvidenceStore
 
 # --------------------------------------------------------------------------
@@ -94,6 +95,19 @@ _CANON = {
     "increase": "rise", "climbed": "rise",
     "volatile": "volatility", "annualized": "annualised",
 }
+
+
+# Words too common to identify a quantity on their own: "operating margin" and "net
+# margin" share "margin", but they are different numbers.
+_GENERIC = frozenset({"margin", "ratio", "total", "rate", "level", "value", "score",
+                      "index", "figure", "percentage", "amount", "number"})
+
+
+def _bound(claim_labels: set, evidence_labels: set) -> bool:
+    """Do the two describe the same quantity? Distinguishing words must overlap when
+    the claim has any; only if it has none is a generic word enough."""
+    strong = claim_labels - _GENERIC
+    return bool(strong & evidence_labels) if strong else bool(claim_labels & evidence_labels)
 
 
 def _tokens(text: str) -> set:
@@ -167,6 +181,10 @@ def _direction_conflicts(text: str, ind: dict, closes: list,
     # "INFY.NS" must not look like a sentence boundary to the [^.;] spans below;
     # decimals ("23.8") are untouched because a digit follows their dot.
     low = re.sub(r"(?<=[a-z0-9])\.(?=[a-z])", "", text.lower())
+    # ...and a decimal point is not a sentence boundary either: "closed at ₹1512.37,
+    # lower than the 50-day average" must reach the comparison. (A middle dot keeps
+    # the digits apart without ending the [^.;] spans.)
+    low = re.sub(r"(?<=\d)\.(?=\d)", "·", low)
     low = re.sub(r"\b(upper|lower) bollinger(?: bands?)?", r"bollinger \1 band", low)
     out: List[str] = []
 
@@ -426,7 +444,7 @@ class VerificationAgent:
         # oversold conditions with a value of 23.8"), so labels are matched wide.
         wide = labels | _tokens(claim_text)
         for cand, lab in self._recomputed():
-            if close(cand.normalised) and (not wide or wide & lab):
+            if close(cand.normalised) and (not wide or _bound(wide, lab)):
                 return True
 
         for text in evidence_texts:
@@ -434,7 +452,7 @@ class VerificationAgent:
                 c = cand.normalised
                 if not close(c):
                     continue
-                if labels and not (labels & _evidence_labels(text, cand)):
+                if labels and not _bound(labels, _evidence_labels(text, cand)):
                     continue
                 return True
         return False
@@ -442,13 +460,8 @@ class VerificationAgent:
     # ------------------------------------------------------------- entity
     #: Company surface forms the system knows about. Extending this list is the
     #: only change needed to cover a new issuer.
-    ENTITY_FORMS = {
-        "TCS.NS": ["tata consultancy services", "tata consultancy", "tcs"],
-        "RELIANCE.NS": ["reliance industries", "reliance", "ril"],
-        "INFY.NS": ["infosys", "infy"],
-        "HDFCBANK.NS": ["hdfc bank", "hdfc"],
-        "ADANIGREEN.NS": ["adani green energy", "adani green", "adani"],
-    }
+    ENTITY_FORMS = {c.ticker: list(c.aliases) for c in COMPANIES}
+    ENTITY_FORMS["HDFCBANK.NS"].append("hdfc")      # the bare group name also names the bank
 
     def _entities_in(self, text: str) -> set:
         # Whole-word match: "ril" must not fire inside "April" or "brilliant".

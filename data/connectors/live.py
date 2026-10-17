@@ -106,6 +106,66 @@ def fetch_fundamentals(ticker: str) -> Optional[Dict[str, float]]:
         return None
 
 
+_STATEMENT_ROWS = {
+    "income": {"revenue": ["Total Revenue", "Operating Revenue"],
+               "operating_income": ["Operating Income"],
+               "net_income": ["Net Income", "Net Income Common Stockholders"],
+               "eps": ["Basic EPS", "Diluted EPS"]},
+    "balance": {"total_debt": ["Total Debt"],
+                "equity": ["Stockholders Equity", "Common Stock Equity"],
+                "total_assets": ["Total Assets"]},
+}
+
+
+def _row(frame, names, col):
+    for n in names:
+        if n in frame.index:
+            v = frame.at[n, col]
+            if v == v and v is not None:        # NaN check
+                return float(v)
+    return None
+
+
+def fetch_statements(ticker: str) -> Optional[Dict]:
+    """Annual income statement and balance sheet (latest two fiscal years) via yfinance.
+
+    Returns {"currency", "years": [{"end": "2026-03-31", revenue, operating_income,
+    net_income, eps, total_debt, equity, total_assets}, ...]} newest first, with None
+    for rows a company does not report (banks have no operating income). Real data from
+    Yahoo's statements, not parsed from the companies' own annual-report PDFs."""
+    cached = _read_cache(f"stmt_{ticker}", max_age_hours=24.0)
+    if cached:
+        return cached
+    try:
+        import yfinance as yf
+
+        tk = yf.Ticker(ticker)
+        inc, bal = tk.income_stmt, tk.balance_sheet
+        if inc is None or len(inc.columns) == 0:
+            return None
+        years = []
+        for col in list(inc.columns)[:2]:
+            end = col.strftime("%Y-%m-%d")
+            row = {"end": end}
+            for key, names in _STATEMENT_ROWS["income"].items():
+                row[key] = _row(inc, names, col)
+            bal_col = next((c for c in bal.columns if c.strftime("%Y-%m-%d") == end), None) \
+                if bal is not None and len(bal.columns) else None
+            for key, names in _STATEMENT_ROWS["balance"].items():
+                row[key] = _row(bal, names, bal_col) if bal_col is not None else None
+            years.append(row)
+        if years[0].get("revenue") is None and years[0].get("net_income") is None:
+            return None
+        info = tk.info or {}
+        payload = {"currency": info.get("financialCurrency") or info.get("currency"),
+                   "years": years, "provenance": "yfinance.income_stmt+balance_sheet",
+                   "retrieved": _dt.date.today().isoformat()}
+        _write_cache(f"stmt_{ticker}", payload)
+        return payload
+    except Exception:
+        return None
+
+
 # ------------------------------------------------------------------ news
 def fetch_news(query: str, limit: int = 25) -> Optional[List[Dict[str, str]]]:
     """Headlines from public RSS feeds, filtered on the query term."""

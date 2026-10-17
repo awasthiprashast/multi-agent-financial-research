@@ -34,6 +34,7 @@ SECTION_NAMES = {
 
 EVIDENCE_QUERIES = {
     "fundamental": [
+        "annual financials total revenue growth operating margin net income earnings per share",
         "headline fundamentals price-to-earnings return on equity profit margin",
         "consolidated revenue from operations growth over previous financial year",
         "operating margin for the year bps movement versus prior year",

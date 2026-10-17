@@ -82,9 +82,13 @@ the server log line. Set `FINRESEARCH_LOG_JSON=1` for JSON logs (the image does)
 - **Unofficial data sources.** Prices and fundamentals come from Yahoo Finance via
   `yfinance`, headlines from Google News RSS. Both have terms of use and no uptime
   guarantee; check them before commercial or public use, or swap in a licensed feed.
-- **Coverage.** Three companies are supported end to end (TCS, Reliance, Infosys);
-  see `TICKER_ALIASES` and `ENTITY_FORMS` to add more. Live fundamentals are four
-  headline ratios, not filings.
+- **Coverage.** 12 large-cap NSE companies are supported live (`data/universe.py`; add
+  one `Company` entry to add another). Only TCS, Reliance and Infosys have an offline
+  synthetic snapshot, so `FINRESEARCH_OFFLINE=1` serves just those three. Fundamentals
+  are Yahoo Finance's annual income statement and balance sheet (latest two fiscal
+  years) plus headline ratios; they are **not** parsed from the companies' own annual
+  reports or exchange filings, and Yahoo's data can be wrong or late. Live news is
+  headlines from the last 30 days only.
 - **Verification is bounded.** Numbers and a defined set of directional statements are
   checked against data. Interpretation and speculation are not (see the README).
 - **Not investment advice.** The disclaimer in every report is not optional. If this

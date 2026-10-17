@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-17 02:51:15",
+  "generated_at": "2026-10-17 16:35:01",
   "corpus_mode": "snapshot",
   "embedder": "tfidf-svd-256",
   "sentiment_scorer": "financial lexicon (offline fallback)",
@@ -10,7 +10,7 @@
     "claims_generated": 81,
     "claims_surfaced": 81,
     "grounding_rate": 1.0,
-    "mean_confidence": 0.983,
+    "mean_confidence": 0.9827,
     "per_report": [
       {
         "query": "Should I look at TCS for a 1-year hold?",
@@ -20,8 +20,8 @@
         "claims_surfaced": 16,
         "grounding_rate": 1.0,
         "mean_confidence": 0.9801,
-        "total_s": 3.2184,
-        "verify_s": 0.0853
+        "total_s": 3.6692,
+        "verify_s": 0.1023
       },
       {
         "query": "Give me a full research report on Reliance",
@@ -30,9 +30,9 @@
         "claims_generated": 16,
         "claims_surfaced": 16,
         "grounding_rate": 1.0,
-        "mean_confidence": 0.9784,
-        "total_s": 0.1912,
-        "verify_s": 0.0764
+        "mean_confidence": 0.9787,
+        "total_s": 0.2265,
+        "verify_s": 0.0923
       },
       {
         "query": "Complete analysis of Infosys",
@@ -42,8 +42,8 @@
         "claims_surfaced": 16,
         "grounding_rate": 1.0,
         "mean_confidence": 0.9776,
-        "total_s": 0.1895,
-        "verify_s": 0.0767
+        "total_s": 0.2255,
+        "verify_s": 0.0947
       },
       {
         "query": "Is TCS cheap and is the chart supportive?",
@@ -53,8 +53,8 @@
         "claims_surfaced": 11,
         "grounding_rate": 1.0,
         "mean_confidence": 0.9777,
-        "total_s": 0.0723,
-        "verify_s": 0.0502
+        "total_s": 0.0902,
+        "verify_s": 0.0643
       },
       {
         "query": "How volatile is Reliance?",
@@ -64,8 +64,8 @@
         "claims_surfaced": 3,
         "grounding_rate": 1.0,
         "mean_confidence": 0.9787,
-        "total_s": 0.019,
-        "verify_s": 0.0134
+        "total_s": 0.0219,
+        "verify_s": 0.0158
       },
       {
         "query": "What is the news sentiment on Infosys?",
@@ -75,8 +75,8 @@
         "claims_surfaced": 2,
         "grounding_rate": 1.0,
         "mean_confidence": 0.995,
-        "total_s": 0.0129,
-        "verify_s": 0.0116
+        "total_s": 0.0171,
+        "verify_s": 0.0157
       },
       {
         "query": "Fundamentals and news flow for TCS",
@@ -86,19 +86,19 @@
         "claims_surfaced": 8,
         "grounding_rate": 1.0,
         "mean_confidence": 0.9905,
-        "total_s": 0.0587,
-        "verify_s": 0.0403
+        "total_s": 0.0764,
+        "verify_s": 0.0524
       },
       {
         "query": "Compare Reliance and TCS on fundamentals and risk",
-        "ticker": "TCS.NS",
+        "ticker": "RELIANCE.NS",
         "agents": 2,
         "claims_generated": 9,
         "claims_surfaced": 9,
         "grounding_rate": 1.0,
-        "mean_confidence": 0.9857,
-        "total_s": 0.0646,
-        "verify_s": 0.0412
+        "mean_confidence": 0.9834,
+        "total_s": 0.0778,
+        "verify_s": 0.0494
       }
     ]
   },
@@ -113,7 +113,7 @@
     "f1": 1.0,
     "accuracy": 1.0,
     "false_positive_rate": 0.0,
-    "ms_per_claim": 5.28,
+    "ms_per_claim": 6.74,
     "by_perturbation": {
       "entity_swap": {
         "caught": 20,
@@ -330,11 +330,11 @@
     "note": "held-out accuracy is the reportable figure; the snapshot check only confirms the scoring path is wired correctly and is not a model benchmark. FinBERT replaces the fallback scorer wherever the model weights are available."
   },
   "cost_latency": {
-    "routed_mean_total_s": 0.068,
-    "unrouted_mean_total_s": 0.1044,
-    "routed_mean_verify_s": 0.0493,
-    "routed_mean_agents_s": 0.0177,
-    "latency_reduction_pct": 34.87,
+    "routed_mean_total_s": 0.0835,
+    "unrouted_mean_total_s": 0.1332,
+    "routed_mean_verify_s": 0.0609,
+    "routed_mean_agents_s": 0.0215,
+    "latency_reduction_pct": 37.31,
     "external_api_cost_usd_per_report": 0.0,
     "note": "all inference is local or free-tier; monetary cost per report is zero by construction"
   }

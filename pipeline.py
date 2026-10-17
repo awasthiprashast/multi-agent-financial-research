@@ -19,11 +19,13 @@ from typing import Dict, List, Optional
 import config  # noqa: F401  (loads .env before any backend is chosen)
 from agents.analysts import FundamentalAgent, RiskAgent, SentimentAgent, TechnicalAgent
 from agents.data_collector import DataCollectionAgent
-from agents.orchestrator import Router, resolve_ticker
+from agents.orchestrator import Router
 from agents.report_generator import render_markdown
+from agents.synthesis import SynthesisAgent
 from agents.validator import VerificationAgent
 from core import Claim, Report
 from data.corpus import load_corpus
+from data.universe import COMPANIES, UnknownCompanyError, resolve_ticker, supported_tickers
 from rag.store import EvidenceStore
 
 log = logging.getLogger(__name__)
@@ -42,10 +44,11 @@ AGENT_CLASSES = {
 class ResearchPipeline:
     def __init__(self, prefer_live: bool = True, prefer_neural: bool = True,
                  threshold: float = 0.60, router: Optional[Router] = None,
-                 analysts: str = "template", llm=None):
+                 analysts: str = "template", llm=None, synthesize: bool = True):
         """analysts: "template" (deterministic, default) | "llm" (LLM-written
         claims, verified) | "auto" (LLM if a backend is reachable, else template)."""
         self.prefer_live = prefer_live
+        self.synthesize = synthesize            # add the "Overall view" section
         self.prefer_neural = prefer_neural
         self.threshold = threshold
         self.router = router or Router().fit()
@@ -61,6 +64,11 @@ class ResearchPipeline:
                         "analysts='llm' needs a backend: set GROQ_API_KEY or run Ollama")
                 self.llm = None
         self.analysts = "llm" if self.llm else "template"
+
+    @property
+    def supported(self) -> List[str]:
+        """Tickers this pipeline can analyse: all companies live, the 3 snapshot ones offline."""
+        return supported_tickers(offline=not self.prefer_live)
 
     def _make_agent(self, name: str, store):
         if self.llm is not None:
@@ -152,6 +160,14 @@ class ResearchPipeline:
             force_agents: Optional[List[str]] = None) -> Report:
         t_start = time.perf_counter()
         ticker = ticker or resolve_ticker(query)
+        if ticker is None:
+            raise UnknownCompanyError(
+                "no supported company named in the query; supported: "
+                + ", ".join(c.name for c in COMPANIES if c.ticker in self.supported))
+        if ticker not in self.supported:
+            raise UnknownCompanyError(
+                f"{ticker} is not available in {'offline' if not self.prefer_live else 'live'} "
+                f"mode; available: {', '.join(self.supported)}")
         ctx = self._prepare(ticker)
         store: EvidenceStore = ctx["store"]
 
@@ -165,6 +181,12 @@ class ResearchPipeline:
         claims: List[Claim] = []
         for agent in agents.values():
             claims.extend(agent.run(ticker, ctx))
+        if self.synthesize:
+            # Overall view: reconciles the specialists' inputs, deterministic, and its
+            # claims are verified like everyone else's. Listed first in the report.
+            synth = SynthesisAgent(store, set(selected))
+            agents["synthesis"] = synth
+            claims = synth.run(ticker, ctx) + claims
         agent_time = time.perf_counter() - t_agents
 
         validator = VerificationAgent(store, threshold=self.threshold)

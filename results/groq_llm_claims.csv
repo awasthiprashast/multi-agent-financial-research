@@ -1,34 +1,49 @@
 ticker,agent,claim,first_pass_status,first_pass_confidence,verifier_reason,oracle_numeric_ok,oracle_bad_numbers,surfaced_unrevised
+TCS.NS,fundamental,"TCS reported consolidated revenue from operations of ₹240,893 cr, representing growth of 6.8% over the previous financial year.",verified,0.998,,True,,True
+TCS.NS,fundamental,Basic earnings per share for the year were ₹134.2 and the dividend yield was approximately 1.6%.,verified,0.997,,True,,True
+TCS.NS,fundamental,Return on equity for the year was 51.2% and the consolidated debt-to-equity ratio stood at 0.09.,verified,0.998,,True,,True
+TCS.NS,fundamental,"Operating margin for the year stood at 24.3%, a movement of -70 bps versus the prior year.",verified,0.994,,True,,True
+TCS.NS,fundamental,Annualised volatility of daily log returns is 19.0% and total return over the window is -7.9%.,verified,0.993,,True,,True
+TCS.NS,technical,The last close was ₹3202.39,verified,0.98,,True,,True
+TCS.NS,technical,The 20‑day simple moving average is ₹3383.46,verified,0.988,,True,,True
+TCS.NS,technical,The RSI(14) is 23.8,verified,0.99,,True,,True
+TCS.NS,technical,The closing price fell from ₹3477.99 at the start of the window to ₹3202.39 at the end over 252 trading sessions,verified,0.993,,True,,True
+TCS.NS,sentiment,"The sentiment scoring record for TCS.NS shows 4 positive items, 4 negative items and 4 neutral items, resulting in a net sentiment score of 0.0",verified,0.997,,True,,True
+TCS.NS,sentiment,"The net sentiment score is 0.0, computed as positive minus negative divided by total items",verified,0.998,,True,,True
+TCS.NS,sentiment,"Tata Consultancy Services shares advanced after the company reported a stronger-than-expected order book, with analysts pointing to improving deal conversion in the BFSI segment",verified,1.0,,True,,True
+TCS.NS,risk,TCS.NS has an annualised volatility of daily log returns of 19.0% over the period 2026-01-01 to 2026-12-28.,verified,0.981,,True,,True
+TCS.NS,risk,The maximum drawdown for TCS.NS within the same window is -25.7%.,verified,0.98,,True,,True
+TCS.NS,risk,Historical one-day Value at Risk at the 95% level for TCS.NS is -1.93% over the period.,verified,0.99,,True,,True
+TCS.NS,risk,Total return for TCS.NS over the window is -7.9%.,verified,0.955,,True,,True
 RELIANCE.NS,fundamental,"Reliance Industries reported consolidated revenue from operations of ₹901,064 cr, representing growth of 7.1% over the previous financial year.",verified,0.997,,True,,True
-RELIANCE.NS,fundamental,"The company's operating margin for the year stood at 16.9%, a movement of 40 bps versus the prior year.",verified,0.992,,True,,True
-RELIANCE.NS,fundamental,"Return on equity for the year was 9.3% and the consolidated debt-to-equity ratio stood at 0.44, with the company maintaining a net cash position.",verified,0.999,,True,,True
-RELIANCE.NS,fundamental,Basic earnings per share for the year were ₹102.9 and the Board recommended a final dividend that yields approximately 0.4% at the year‑end closing price.,verified,0.997,,True,,True
-RELIANCE.NS,fundamental,Annualised volatility of daily log returns was 25.3% and total return over the window was -6.7%.,verified,0.981,,True,,True
-RELIANCE.NS,technical,"Reliance Industries closed at ₹1325.9 on the last session, which is below its 20-day simple moving average of ₹1314.42 and its 50-day simple moving average of ₹1334.15",verified,0.977,,True,,True
-RELIANCE.NS,technical,"The RSI(14) for Reliance Industries is 54.0, indicating a neutral momentum condition",verified,0.907,,True,,True
-RELIANCE.NS,technical,"Reliance Industries' MACD line is -9.58 against a signal line of -11.26, producing a positive histogram of 1.68",verified,0.957,,True,,True
-RELIANCE.NS,technical,The Bollinger band upper limit is ₹1382.68 and the lower limit is ₹1246.15 for Reliance Industries,verified,0.974,,True,,True
-RELIANCE.NS,technical,"Over the 252‑session window, Reliance Industries fell from ₹1421.06 at the start to ₹1325.90 at the end, with a high of ₹1493.29 and a low of ₹985.44",verified,0.99,,True,,True
-RELIANCE.NS,sentiment,"The sentiment scoring record for RELIANCE.NS shows 4 positive items, 4 negative items, 4 neutral items, and a net sentiment score of 0.0.",verified,0.998,,True,,True
-RELIANCE.NS,sentiment,"Reliance Industries shares advanced after the company reported a stronger-than-expected order book, with analysts pointing to improving deal conversion in the BFSI segment.",verified,1.0,,True,,True
-RELIANCE.NS,sentiment,"Despite the recent positive news of an advancing share price, the overall sentiment for RELIANCE.NS remains neutral as indicated by an equal number of positive and negative items and a net sentiment score of 0.0.",verified,0.986,,True,,True
-RELIANCE.NS,risk,RELIANCE.NS exhibited an annualised volatility of daily log returns of 25.3% over the 2026-01-01 to 2026-12-28 period.,verified,0.978,,True,,True
-RELIANCE.NS,risk,The maximum drawdown for RELIANCE.NS within the same window was -34.0%.,verified,0.954,,True,,True
-RELIANCE.NS,risk,Historical one‑day Value at Risk at the 95% confidence level for RELIANCE.NS was -2.6% during the period.,verified,0.972,,True,,True
-RELIANCE.NS,risk,Total return for RELIANCE.NS over the 2026-01-01 to 2026-12-28 window was -6.7%.,verified,0.946,,True,,True
+RELIANCE.NS,fundamental,Basic earnings per share for the year were ₹102.9 and the dividend yield was approximately 0.4%.,verified,0.997,,True,,True
+RELIANCE.NS,fundamental,Return on equity for the year was 9.3% and the consolidated debt-to-equity ratio stood at 0.44.,verified,0.998,,True,,True
+RELIANCE.NS,fundamental,"Operating margin for the year stood at 16.9%, a movement of 40 bps versus the prior year.",verified,0.994,,True,,True
+RELIANCE.NS,fundamental,Annualised volatility of daily log returns is 25.3% and total return over the window is -6.7%.,verified,0.992,,True,,True
+RELIANCE.NS,technical,The last close of ₹1325.9 is below the 50-day simple moving average of ₹1334.15.,verified,0.984,,True,,True
+RELIANCE.NS,technical,The last close of ₹1325.9 is above the 20-day simple moving average of ₹1314.42.,verified,0.984,,True,,True
+RELIANCE.NS,technical,"The RSI(14) is 54.0, indicating a neutral momentum condition.",verified,0.962,,True,,True
+RELIANCE.NS,technical,The closing price was ₹1325.90 compared with ₹1421.06 at the start of the 252‑session window.,verified,0.989,,True,,True
+RELIANCE.NS,technical,The last close of ₹1325.9 sits within the Bollinger band range of ₹1246.15 to ₹1382.68.,verified,0.974,,True,,True
+RELIANCE.NS,sentiment,"The sentiment scoring record for RELIANCE.NS shows 4 positive items, 4 negative items and 4 neutral items with a net sentiment score of 0.0",verified,0.997,,True,,True
+RELIANCE.NS,sentiment,"The net sentiment score is 0.0, computed as positive minus negative divided by total items",verified,0.998,,True,,True
+RELIANCE.NS,sentiment,Reliance Industries shares advanced after the company reported a stronger-than-expected order book,verified,0.998,,True,,True
+RELIANCE.NS,risk,Reliance Industries Ltd. (RELIANCE.NS) exhibited an annualised volatility of daily log returns of 25.3% over the period from 2026-01-01 to 2026-12-28.,verified,0.974,,True,,True
+RELIANCE.NS,risk,The maximum drawdown recorded for RELIANCE.NS during the same window was -34.0%.,verified,0.923,,True,,True
+RELIANCE.NS,risk,Historical one‑day Value at Risk at the 95% confidence level for RELIANCE.NS was -2.6% over the observed period.,verified,0.981,,True,,True
+RELIANCE.NS,risk,Total return for RELIANCE.NS across the 252‑session window was -6.7%.,verified,0.911,,True,,True
 INFY.NS,fundamental,"Infosys reported consolidated revenue from operations of ₹158,381 cr, representing growth of 4.7% over the previous financial year.",verified,0.999,,True,,True
+INFY.NS,fundamental,Basic earnings per share for the year were ₹63.4 and the dividend yield was approximately 2.4%.,verified,0.997,,True,,True
+INFY.NS,fundamental,Return on equity for the year was 31.8% and the consolidated debt-to-equity ratio stood at 0.11.,verified,0.997,,True,,True
 INFY.NS,fundamental,"Operating margin for the year stood at 21.1%, a movement of 30 bps versus the prior year.",verified,0.994,,True,,True
-INFY.NS,fundamental,"Return on equity for the year was 31.8% and the consolidated debt-to-equity ratio stood at 0.11, with the company maintaining a net cash position.",verified,0.998,,True,,True
-INFY.NS,fundamental,Basic earnings per share for the year were ₹63.4 and the Board’s dividend recommendation corresponds to a dividend yield of approximately 2.4% at the year‑end closing price.,verified,0.998,,True,,True
-INFY.NS,technical,"Infosys closed at ₹1512.37, which is above its 20‑day simple moving average of ₹1433.31.",verified,0.981,,True,,True
-INFY.NS,technical,The closing price of ₹1512.37 also exceeds the 50‑day simple moving average of ₹1421.63.,verified,0.959,,True,,True
-INFY.NS,technical,The RSI(14) of 66.8 indicates bullish momentum.,verified,0.977,,True,,True
-INFY.NS,technical,"The MACD line at 11.65 is well above its signal of 1.68, producing a histogram of 9.98.",verified,0.955,,True,,True
-INFY.NS,technical,The price of ₹1512.37 sits slightly above the Bollinger upper band of ₹1511.46.,verified,0.947,,True,,True
-INFY.NS,sentiment,"The sentiment scoring record for INFY.NS shows 4 positive, 4 negative and 4 neutral items with a net sentiment score of 0.0.",verified,0.996,,True,,True
-INFY.NS,sentiment,"Infosys shares advanced after the company reported a stronger-than-expected order book, with analysts noting improving deal conversion in the BFSI segment.",verified,1.0,,True,,True
-INFY.NS,sentiment,"Despite the recent positive news about a stronger order book, the overall sentiment for INFY.NS remains neutral as reflected by the net sentiment score of 0.0.",verified,0.977,,True,,True
-INFY.NS,risk,INFY.NS exhibits an annualised volatility of daily log returns of 22.7% over the 2026-01-01 to 2026-12-28 period.,verified,0.976,,True,,True
-INFY.NS,risk,The maximum drawdown for INFY.NS within the same window is -26.2%.,verified,0.979,,True,,True
-INFY.NS,risk,INFY.NS historical one‑day Value at Risk at the 95% confidence level is -2.62% for the observed period.,verified,0.986,,True,,True
-INFY.NS,risk,The total return for INFY.NS over the 2026-01-01 to 2026-12-28 window is -2.0%.,verified,0.959,,True,,True
+INFY.NS,technical,"INFY.NS closed at ₹1512.37, which is above its 20-day simple moving average of ₹1433.31.",verified,0.98,,True,,True
+INFY.NS,technical,The 50-day simple moving average of ₹1421.63 is also below the last close of ₹1512.37.,verified,0.98,,True,,True
+INFY.NS,technical,The RSI(14) of 66.8 indicates the stock is in the upper half of its momentum range.,verified,0.942,,True,,True
+INFY.NS,technical,"The MACD histogram of 9.98, with the MACD line at 11.65 above the signal at 1.68, suggests bullish momentum.",verified,0.955,,True,,True
+INFY.NS,sentiment,"The sentiment scoring record for INFY.NS shows 4 positive, 4 negative and 4 neutral items with a net sentiment score of 0.0",verified,0.996,,True,,True
+INFY.NS,sentiment,"Infosys shares advanced after the company reported a stronger-than-expected order book, with analysts pointing to improving deal conversion in the BFSI segment",verified,1.0,,True,,True
+INFY.NS,sentiment,"Overall news sentiment for INFY.NS is neutral, reflected by a net sentiment score of 0.0 despite a positive report of a stronger order book",verified,0.982,,True,,True
+INFY.NS,risk,INFY.NS exhibited an annualised volatility of daily log returns of 22.7% over the 2026-01-01 to 2026-12-28 period.,verified,0.976,,True,,True
+INFY.NS,risk,The maximum drawdown for INFY.NS within that window was -26.2%.,verified,0.954,,True,,True
+INFY.NS,risk,INFY.NS recorded a historical one-day Value at Risk at the 95% confidence level of -2.62% for the same period.,verified,0.98,,True,,True
+INFY.NS,risk,The total return for INFY.NS over the 2026-01-01 to 2026-12-28 window was -2.0%.,verified,0.946,,True,,True

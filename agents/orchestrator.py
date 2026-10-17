@@ -12,7 +12,6 @@ Labels are multi-label: a query may need several agents.
 
 from __future__ import annotations
 
-import re
 from typing import Dict, List, Tuple
 
 AGENTS = ["fundamental", "technical", "sentiment", "risk"]
@@ -109,12 +108,9 @@ TRAIN: List[Tuple[str, List[str]]] = [
     ("roe and analyst commentary on infy", ["fundamental", "sentiment"]),
 ]
 
-TICKER_ALIASES = {
-    "tcs": "TCS.NS", "tata consultancy": "TCS.NS",
-    "reliance": "RELIANCE.NS", "ril": "RELIANCE.NS",
-    "infosys": "INFY.NS", "infy": "INFY.NS",
-}
-
+# Company recognition lives in data/universe.py (one list for the router, the
+# verifier, the corpus and the API); re-exported here for existing imports.
+from data.universe import TICKER_ALIASES, resolve_ticker  # noqa: E402,F401
 
 # --------------------------------------------------------------------------
 # Feature design
@@ -219,11 +215,3 @@ class Router:
             self.fit()
         proba = self._clf.predict_proba([featurise(query)])[0]
         return {a: float(p) for a, p in zip(AGENTS, proba)}
-
-
-def resolve_ticker(query: str, default: str = "TCS.NS") -> str:
-    q = query.lower()
-    for alias, tic in TICKER_ALIASES.items():
-        if re.search(rf"\b{re.escape(alias)}\b", q):
-            return tic
-    return default

@@ -25,21 +25,26 @@ round's output, so early seeds are **in-sample**:
 
 | 4 (Groq `gpt-oss-120b`) | 14 of 29 withheld claims were **correct**: "2026-01-01 to 2026-12-28" was read as the numbers −01, −01, −12, −28; "a high of ₹1493" did not match "the highest close"; "closed at" did not match "close" | dates masked before number extraction; small word-form map (highest→high, closed→close, fell→decline …) |
 
+| 5 (Mistral, after prompt-hardening) | "last close ₹1512.37, **lower than** the 50-day average of ₹1421.63" (false) **surfaced**. Cause: the rules search with spans that cannot cross a ".", so a decimal number between subject and comparison silently disabled the check — for *every* such sentence | decimal points protected before matching; regression tests |
+
 Seeds 555 and 909 were generated after round 2, so they were a partly held-out test;
 they still revealed one gap (the round-3 rule). All five seeds were then re-run on the
 final code, and the final-code surfaced technical claims were re-audited.
 
 ## Final-code audit (distinct surfaced technical claims across the five seeds)
 
-61 distinct technical claims were surfaced.
+The numbers below are from the final code, after the prompt-hardening and the decimal
+fix (round 5). Round 5 changed what the model wrote, so the earlier audit (61 claims)
+was redone on the new output.
+
+57 distinct technical claims were surfaced.
 
 - **0** state a checkable fact (a level, a comparison, an indicator zone, a direction
   over the window) that is wrong.
-- **1** is vague and not checkable: Reliance "close is within the Bollinger band lower
-  limit" (the close sits mid-band).
-- **2** have a true premise and a wrong conclusion, which no rule here can detect:
-  "20-day SMA below the price, suggesting a downward trend" (that suggests the
-  opposite).
+- Claims whose conclusion is an *interpretation* of a true premise ("Bollinger upper
+  above the price, suggesting a potential ceiling"; "20-day SMA below the price,
+  suggesting a downward trend", which is backwards) cannot be detected by any rule
+  here and are surfaced.
 
 Not audited: fundamental, sentiment and risk prose beyond the numeric oracle.
 Sentiment claims in particular include speculation ("could lead to increased
@@ -49,13 +54,13 @@ revenue") that is surfaced because it has nothing checkable.
 
 | | |
 |---|---|
-| LLM claims | 267 (fundamental 75, technical 74, sentiment 45, risk 73) |
-| Withheld on first pass | 27 (10.1 %) |
-| …of which direction contradicted by raw prices | 21 (28 % of the 74 technical claims) |
-| …of which a number not in the evidence or recomputation | 5 |
-| …of which weak semantic support | 1 |
-| Claims with a wrong number per the structured oracle | 3, all withheld |
-| Revisions attempted / successful | 30 / 24 |
+| LLM claims | 259 (fundamental 74, technical 73, sentiment 45, risk 67) |
+| Withheld on first pass | 22 (8.5 %) |
+| …of which direction contradicted by raw prices | 16 (22 % of the 73 technical claims) |
+| …of which a number not in the evidence or recomputation | 4 |
+| …of which weak semantic support | 2 |
+| Claims with a wrong number per the structured oracle | 1, withheld |
+| Revisions attempted / successful | 26 / 18 |
 
 The model rarely gets a *number* wrong when the number is in front of it; it often gets
 a *direction* wrong. That is the failure the directional checks exist for.

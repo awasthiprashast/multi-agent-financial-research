@@ -43,14 +43,16 @@ from fastapi.responses import JSONResponse  # noqa: E402
 from pydantic import BaseModel, Field  # noqa: E402
 
 import config  # noqa: E402,F401  (loads .env)
-from agents.orchestrator import TICKER_ALIASES  # noqa: E402
+from data.corpus import DataUnavailableError  # noqa: E402
+from data.universe import COMPANIES, find_tickers, supported_tickers  # noqa: E402
 from logging_setup import setup_logging  # noqa: E402
 from pipeline import ResearchPipeline  # noqa: E402
 
 setup_logging()
 log = logging.getLogger("api")
 
-SUPPORTED = sorted(set(TICKER_ALIASES.values()))
+OFFLINE = os.environ.get("FINRESEARCH_OFFLINE", "") in ("1", "true", "yes")
+SUPPORTED = supported_tickers(offline=OFFLINE)
 
 
 def _env_int(name: str, default: int) -> int:
@@ -85,7 +87,7 @@ def get_pipeline() -> ResearchPipeline:
     with _pipe_lock:
         if _pipe is None:
             _pipe = ResearchPipeline(
-                prefer_live=os.environ.get("FINRESEARCH_OFFLINE", "") not in ("1", "true", "yes"),
+                prefer_live=not OFFLINE,
                 analysts=os.environ.get("FINRESEARCH_ANALYSTS", "template"))
         return _pipe
 
@@ -160,6 +162,16 @@ def _check_ticker(ticker: str | None) -> None:
         raise HTTPException(422, f"unsupported ticker {ticker!r}; supported: {SUPPORTED}")
 
 
+def _check_query(q: "Query") -> None:
+    """Reject early (422) a request that names no company we can analyse."""
+    _check_ticker(q.ticker)
+    if q.ticker is None:
+        found = find_tickers(q.query)
+        if not found or found[0] not in SUPPORTED:
+            names = ", ".join(c.name for c in COMPANIES if c.ticker in SUPPORTED)
+            raise HTTPException(422, f"no supported company named in the query; supported: {names}")
+
+
 def _payload(rep, pipe: ResearchPipeline) -> dict:
     withheld_text = {w.claim_id: c.text for c, w in rep.withheld}
     return {
@@ -196,16 +208,19 @@ def health():
     pipe = get_pipeline()
     return {"status": "ok", "version": app.version, "analysts": pipe.analysts,
             "llm": pipe.llm.name if pipe.llm else None, "auth_required": bool(API_KEY),
-            "supported_tickers": SUPPORTED}
+            "offline": OFFLINE, "supported_tickers": SUPPORTED,
+            "companies": {c.ticker: c.name for c in COMPANIES if c.ticker in SUPPORTED}}
 
 
 @app.post("/research", dependencies=GUARDS)
 async def research(q: Query):
-    _check_ticker(q.ticker)
+    _check_query(q)
     loop = asyncio.get_running_loop()
     try:
         return await asyncio.wait_for(loop.run_in_executor(_executor, _run_report, q),
                                       timeout=REQUEST_TIMEOUT_S)
+    except DataUnavailableError as exc:
+        raise HTTPException(503, str(exc)) from None
     except asyncio.TimeoutError:
         raise HTTPException(504, f"report not finished within {REQUEST_TIMEOUT_S}s; use "
                                  "POST /jobs for long (LLM) reports") from None
@@ -230,6 +245,8 @@ def _job_worker(job_id: str, q: Query) -> None:
     update(status="running")
     try:
         update(status="done", result=_run_report(q))
+    except DataUnavailableError as exc:     # an expected, user-explainable failure
+        update(status="failed", error=str(exc))
     except Exception as exc:                # noqa: BLE001 — reported to the poller
         log.exception("job %s failed", job_id)
         update(status="failed", error=type(exc).__name__)
@@ -237,7 +254,7 @@ def _job_worker(job_id: str, q: Query) -> None:
 
 @app.post("/jobs", status_code=202, dependencies=GUARDS)
 def start_job(q: Query):
-    _check_ticker(q.ticker)
+    _check_query(q)
     with _jobs_lock:
         _purge_jobs()
         if len(_jobs) >= MAX_JOBS:

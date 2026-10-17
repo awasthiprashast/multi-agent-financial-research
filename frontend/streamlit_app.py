@@ -16,6 +16,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import streamlit as st  # noqa: E402
 
+from data.corpus import DataUnavailableError  # noqa: E402
+from data.universe import COMPANIES, NAME, UnknownCompanyError  # noqa: E402
 from pipeline import ResearchPipeline  # noqa: E402
 
 st.set_page_config(page_title="Multi-Agent Financial Research Assistant",
@@ -35,7 +37,10 @@ with st.sidebar:
     st.header("Settings")
     threshold = st.slider("Confidence threshold θ", 0.0, 1.0, 0.60, 0.05,
                           help="Claims scoring below this are withheld.")
-    ticker = st.selectbox("Ticker", ["TCS.NS", "RELIANCE.NS", "INFY.NS"])
+    ticker = st.selectbox("Company", [c.ticker for c in COMPANIES],
+                          format_func=lambda t: f"{NAME[t]} ({t})",
+                          help="Live data. Only TCS, Reliance and Infosys have an offline "
+                               "synthetic snapshot.")
     use_llm = st.checkbox("LLM analysts", value=False,
                           help="Analysts write claims with a language model (Groq if "
                                "GROQ_API_KEY is set, else local Ollama). Slower; every "
@@ -62,8 +67,12 @@ if st.session_state.get("ran"):
     except RuntimeError as exc:
         st.error(f"{exc}")
         st.stop()
-    with st.spinner("Agents working…"):
-        rep = pipe.run(query, ticker=ticker)
+    try:
+        with st.spinner("Agents working…"):
+            rep = pipe.run(query, ticker=ticker)
+    except (UnknownCompanyError, DataUnavailableError) as exc:
+        st.error(str(exc))
+        st.stop()
 
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Grounding rate", f"{rep.grounding_rate * 100:.0f}%")

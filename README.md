@@ -19,7 +19,7 @@ what it buys.
 |---|---|---|
 | Verification benchmark, ablation, router, grounding | **synthetic** snapshot corpus with known ground truth (`provenance: synthetic-demo`) | needed so that "supported" has a label |
 | LLM-analyst evaluation | snapshot corpus, claims written by a **local LLM** (Ollama `mistral`) | real model output, synthetic evidence |
-| Live reports (`--live`, default outside `--offline`) | **real** Yahoo Finance prices and fundamentals; no synthetic filings are mixed in | works; sentiment needs RSS/news |
+| Live reports (default outside `--offline`) | **real** Yahoo Finance prices, annual statements (revenue, margins, EPS, ROE, leverage) and ratios, plus Google News headlines from the last 30 days; no synthetic data is mixed in | 12 NSE large-caps |
 | Sentiment-vs-returns study | **real** headlines (Google News RSS) + **real** prices (yfinance), 11 NSE equities | `eval/sentiment_study.py` |
 
 Numbers from the synthetic corpus describe how the *mechanism* behaves on a
@@ -54,6 +54,17 @@ For every claim an agent produces:
 
 The numeric term is a **veto, not a vote**.
 
+### The "Overall view" section
+
+Reports that use two or more specialists start with a short synthesis
+(`agents/synthesis.py`): what the price action says, whether news tone and trend
+agree or diverge, the volatility and worst drawdown, and (live) whether the share
+price moved with or against reported revenue growth. It is deterministic — no LLM —
+and built only from facts the verifier can check by itself (price vs moving
+averages, RSI zone, MACD vs signal, net sentiment score, revenue growth, period
+return), so every sentence is verified like any other claim. The "agree / diverge"
+wording is a fixed function of those facts. It makes no recommendation.
+
 ### What the verifier cannot do
 
 - It cannot judge **interpretation**. "Price above its average suggests a downward
@@ -63,7 +74,11 @@ The numeric term is a **veto, not a vote**.
 - Directional checks cover the technical-indicator statements listed above, not
   arbitrary prose. Rules were extended after auditing LLM output (see below), so
   coverage is whatever has been audited — extend `_direction_conflicts` for more.
-- Entity binding knows five companies (`ENTITY_FORMS`).
+- Entity binding knows the 12 companies in `data/universe.py`; a claim naming any
+  other company is not entity-checked.
+- Label binding needs a distinguishing word to overlap ("operating margin" will not
+  match "net margin" evidence), but very different wording for the same quantity can
+  be rejected: the verifier errs towards withholding.
 
 ---
 
@@ -113,13 +128,13 @@ errors. Two models, five runs each × three companies:
 
 | | Mistral 7B (local, Ollama) | `gpt-oss-120b` (Groq) |
 |---|---|---|
-| Claims | 267 | 221 |
-| Withheld on first pass | 28 (10.5 %) | 1 (0.5 %) |
-| – direction contradicted by raw prices | 21 (28 % of 74 technical claims) | 0 |
-| – a number not in the evidence / recomputation | 6 | 1 |
-| – weak semantic support | 1 | 0 |
-| Wrong number per a structured oracle | 3, all withheld | 0 |
-| Revisions attempted → successful | 30 → 26 | 1 → 1 |
+| Claims | 259 | 238 |
+| Withheld on first pass | 22 (8.5 %) | 1 (0.4 %) |
+| – direction contradicted by raw prices | 16 (22 % of 73 technical claims) | 0 |
+| – a number not in the evidence / recomputation | 4 | 1 |
+| – weak semantic support | 2 | 0 |
+| Wrong number per a structured oracle | 1, withheld | 0 |
+| Revisions attempted → successful | 26 → 18 | 1 → 1 |
 
 Summaries: `results/llm_eval_summary.json`, `results/groq_llm_eval_summary.json`.
 
@@ -133,7 +148,7 @@ perturbation benchmark and the Mistral run.
 **How far to trust this.** The directional rules were developed in three rounds,
 each after reading the previous round's output, so the early seeds are in-sample.
 `results/llm_manual_audit.md` records every round, the leaks each one exposed, and a
-final hand audit of the 67 distinct Mistral technical claims that were surfaced: none
+final hand audit of the 57 distinct Mistral technical claims that were surfaced: none
 states a checkable fact that is wrong; one is vague; two draw a wrong conclusion from
 a correct premise, which the verifier cannot detect. Auditing the Groq run also
 exposed two verifier bugs that wrongly rejected correct claims (ISO dates read as
@@ -213,11 +228,11 @@ features.
 pip install -e ".[all,dev]"        # or just `pip install -e .` for the small core
 
 python pipeline.py "Should I look at TCS for a 1-year hold?" --offline   # CLI, synthetic corpus
-python pipeline.py "Give me a full report on Infosys"                    # CLI, live data
+python pipeline.py "Give me a full report on HDFC Bank"                  # CLI, live data (12 companies)
 python pipeline.py "Complete analysis of TCS" --offline --llm            # LLM analysts
 streamlit run frontend/streamlit_app.py                                  # demo UI
 uvicorn api.main:app --reload                                            # REST API
-python -m pytest tests/ -q                                               # 74 tests, ~30 s
+python -m pytest tests/ -q                                               # 98 tests, ~40 s
 python -m eval.run_all --offline                                         # benchmark + ablation + router
 python -m eval.llm_eval --seed 7                                         # LLM claims evaluation
 python -m eval.sentiment_study all                                       # headlines -> FinBERT -> correlation
@@ -260,18 +275,24 @@ from Yahoo Finance; the synthetic filings exist only in the snapshot corpus.
 core.py                 Claim / Chunk / Verdict / Report, numeric extraction
 pipeline.py             end-to-end orchestration (CLI)
 llm.py                  Groq / Ollama backends
+config.py               loads .env;  logging_setup.py  logging
 agents/
   orchestrator.py       query router (feature-based classifier)
   data_collector.py     indicators, derived evidence
   analysts.py           template analysts
   llm_analysts.py       LLM analysts (claims written by a model)
+  synthesis.py          "Overall view": agree / diverge across the specialists
   validator.py          ★ the verification mechanism
   report_generator.py   cited report, confidence badges, withheld claims
+api/                    FastAPI service (auth, rate limit, background jobs)
 rag/                    embedder (pluggable) + evidence store
-data/                   snapshot corpus; live connectors (yfinance, RSS, Google News, GDELT)
+data/
+  universe.py           the 12 supported companies (single source of truth)
+  corpus.py             snapshot corpus; live evidence (prices, statements, news)
+  connectors/           yfinance, Google News, GDELT, RSS
 eval/                   perturbation benchmark, ablation, LLM eval, sentiment study, router test set
 results/                every reported number
-tests/                  74 tests, 80 % line coverage
+tests/                  98 tests, ~80 % line coverage
 ```
 
 ## Known limitations
@@ -286,5 +307,7 @@ tests/                  74 tests, 80 % line coverage
 ---
 
 *Research output from an academic prototype. Not investment advice.*
+
+
 
 

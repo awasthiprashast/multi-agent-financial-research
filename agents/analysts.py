@@ -19,6 +19,19 @@ from typing import List, Optional
 from agents.base import Agent
 from core import Claim, extract_numbers
 
+_SENTENCE_END = re.compile(r"(?<![A-Z])[.!?](?=\s+[A-Z\"“‘'(]|\s*$)")
+
+
+def first_sentence(text: str) -> str:
+    """The first sentence of `text`, ending with its punctuation.
+
+    A full stop is a sentence end only when it follows a letter or closing mark and
+    precedes a capital or the end — so "52.4%", "Rs. 5" and "Dr. Rao" are not split,
+    which is what splitting on the first "." used to do."""
+    text = text.strip()
+    m = _SENTENCE_END.search(text)
+    return text[: m.end()].strip() if m else (text if text[-1:] in ".!?" else text + ".")
+
 
 def _find_value(text: str, label_pattern: str) -> Optional[str]:
     """Lift the number that follows a label out of an evidence chunk."""
@@ -40,24 +53,63 @@ class FundamentalAgent(Agent):
     ]
 
     def _live_claims(self, ticker: str) -> List[Claim]:
-        """Claims from the real Yahoo Finance fundamentals chunk (live mode)."""
+        """Claims from the real Yahoo Finance data (live mode): the annual statements
+        chunk (`financials_*`) and the headline-ratios chunk (`fundamentals_*`)."""
+        mine = [c for c in self.store.chunks.values()
+                if c.ticker == ticker and c.doc_type == "fundamentals"]
+        fin = next((c for c in mine if c.source.startswith("financials_")), None)
+        head = next((c for c in mine if c.source.startswith("fundamentals_")), None)
         out: List[Claim] = []
-        for chunk in self.store.chunks.values():
-            if chunk.ticker != ticker or chunk.doc_type != "fundamentals":
-                continue
-            cited = [chunk.chunk_id]
-            pe = _find_value(chunk.text, r"Trailing price-to-earnings ratio is")
-            roe = _find_value(chunk.text, r"Return on equity is")
-            de = _find_value(chunk.text, r"Debt-to-equity ratio is")
-            pm = _find_value(chunk.text, r"Profit margin is")
+
+        if fin is not None:
+            cited = [fin.chunk_id]
+            fy = fin.meta.get("fiscal_year_end", "")
+            period = f"for the fiscal year ended {fy} " if fy else ""
+            rev = _find_value(fin.text, r"Total revenue is")
+            growth = _find_value(fin.text, r"Revenue growth over the prior fiscal year is")
+            if rev and growth:
+                out.append(self.claim(
+                    f"Total revenue {period}was {rev}, a growth of {growth} over the prior "
+                    f"fiscal year.", cited))
+            elif rev:
+                out.append(self.claim(f"Total revenue {period}was {rev}.", cited))
+            opm = _find_value(fin.text, r"Operating margin is")
+            if opm:
+                out.append(self.claim(f"The operating margin {period}was {opm}.", cited))
+            nm = _find_value(fin.text, r"Net margin is")
+            ni = _find_value(fin.text, r"Net income is")
+            if nm and ni:
+                out.append(self.claim(
+                    f"Net income {period}was {ni}, a net margin of {nm}.", cited))
+            eps = _find_value(fin.text, r"Basic earnings per share is")
+            eps0 = _find_value(fin.text, r"Prior-year basic earnings per share was")
+            if eps and eps0:
+                out.append(self.claim(
+                    f"Basic earnings per share were {eps}, against {eps0} in the prior "
+                    f"year.", cited))
+            elif eps:
+                out.append(self.claim(f"Basic earnings per share were {eps}.", cited))
+            de = _find_value(fin.text, r"Debt-to-equity ratio is")
+            if de:
+                out.append(self.claim(f"The debt-to-equity ratio was {de}.", cited))
+            roe = _find_value(fin.text, r"Return on equity is")
+            if roe:
+                out.append(self.claim(
+                    f"Return on equity, computed as net income over year-end equity, was "
+                    f"{roe}.", cited))
+
+        if head is not None:
+            cited = [head.chunk_id]
+            pe = _find_value(head.text, r"Trailing price-to-earnings ratio is")
             if pe:
                 out.append(self.claim(f"The trailing price-to-earnings ratio is {pe}.", cited))
-            if roe:
-                out.append(self.claim(f"Return on equity is {roe}.", cited))
-            if de:
-                out.append(self.claim(f"The debt-to-equity ratio is {de}.", cited))
-            if pm:
-                out.append(self.claim(f"Profit margin is {pm}.", cited))
+            if fin is None:                 # no statements: fall back to Yahoo's headline ratios
+                for label, fmt in ((r"Return on equity is", "Return on equity is {}."),
+                                   (r"Debt-to-equity ratio is", "The debt-to-equity ratio is {}."),
+                                   (r"Profit margin is", "Profit margin is {}.")):
+                    v = _find_value(head.text, label)
+                    if v:
+                        out.append(self.claim(fmt.format(v), cited))
         return out
 
     def run(self, ticker: str, context: dict) -> List[Claim]:
@@ -126,7 +178,7 @@ class FundamentalAgent(Agent):
         if not nums:
             return None
         revised = self.claim(
-            f"The filing states: {chunk.text.split('.')[0].strip()}.", cited)
+            f"The filing states: {first_sentence(chunk.text)}", cited)
         revised.revision = claim.revision + 1
         return revised
 
@@ -210,7 +262,7 @@ class SentimentAgent(Agent):
         if strongest is not None:
             claims.append(self.claim(
                 f"A representative item in the window reads: "
-                f"\"{strongest.text.split('.')[0].strip()}.\"",
+                f"\"{first_sentence(strongest.text)}\"",
                 [strongest.chunk_id]))
         return claims
 

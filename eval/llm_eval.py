@@ -118,7 +118,8 @@ def main() -> None:
 
     from pipeline import ResearchPipeline
 
-    pipe = ResearchPipeline(prefer_live=False, analysts="llm")
+    # synthesize=False: this evaluation is about what the LLM analysts write
+    pipe = ResearchPipeline(prefer_live=False, analysts="llm", synthesize=False)
     print("LLM backend:", pipe.llm.name)
     all4 = ["fundamental", "technical", "sentiment", "risk"]
 

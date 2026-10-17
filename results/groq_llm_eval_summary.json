@@ -1,5 +1,5 @@
 {
-  "llm_claims": 221,
+  "llm_claims": 238,
   "claims_flagged_first_pass": 1,
   "claims_with_a_wrong_number_per_oracle": 0,
   "wrong_numbers_that_reached_the_report": 0,
@@ -13,5 +13,5 @@
     555,
     909
   ],
-  "first_pass_flag_rate": 0.0045
+  "first_pass_flag_rate": 0.0042
 }

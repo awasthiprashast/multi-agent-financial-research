@@ -158,8 +158,10 @@ def test_indicator_claim_is_checked_against_raw_prices_not_indexed_text():
             import dataclasses
             store.chunks[cid] = dataclasses.replace(
                 ch, text=ch.text.replace(f"RSI(14) is {real}", f"RSI(14) is {fake}"))
-    good = Claim.new("t", "s", f"RSI(14) is {real}, which places the stock in neutral territory.")
-    bad = Claim.new("t", "s", f"RSI(14) is {fake}, which places the stock in neutral territory.")
+    zone = "overbought" if real >= 70 else "oversold" if real <= 30 else "neutral"
+    fake_zone = "overbought" if fake >= 70 else "oversold" if fake <= 30 else "neutral"
+    good = Claim.new("t", "s", f"RSI(14) is {real}, which places the stock in {zone} territory.")
+    bad = Claim.new("t", "s", f"RSI(14) is {fake}, which places the stock in {fake_zone} territory.")
     for c in (good, bad):
         c.cited_chunk_ids = [ch.chunk_id for ch, _ in store.query(c.text, k=2)]
     v = VerificationAgent(store)
@@ -212,6 +214,14 @@ def test_directional_claims_are_checked_against_recomputed_indicators():
     h = lambda t: _direction_conflicts(t, ind3, closes)
     assert h("The closing price is equal to the 20-day simple moving average.")        # 0.87% off
     assert h("The closing price is equal to the 50-day simple moving average.") == []  # 0.23% off
+    # regression: a decimal number between subject and comparison hid the claim from the
+    # rules (found auditing Mistral output: "last close ₹1512.37, lower than the 50-day ...")
+    assert g("The last close price is ₹110.5, lower than the 50-day simple moving average "
+             "of ₹90.25.")                                                   # false: 110 > 90
+    assert g("The last close price is ₹110.5, higher than the 50-day simple moving average "
+             "of ₹90.25.") == []
+    assert g("The 20-day simple moving average of ₹100.25 is higher than the last close.")
+    assert g("The MACD line is 2.5, below the signal line of 1.25.")         # false: 2 > 1
     # average as subject
     assert g("The 20-day simple moving average is lower than the current closing price.") == []
     assert g("The 20-day simple moving average is higher than the current closing price.")

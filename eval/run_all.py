@@ -406,7 +406,9 @@ def main() -> None:
     os.environ["FINRESEARCH_EMBEDDER"] = args.embedder
     os.environ["FINRESEARCH_SCORER"] = args.scorer
 
-    pipe = ResearchPipeline(prefer_live=not args.offline)
+    # synthesize=False keeps the benchmark on the specialist agents' claims, so its
+    # numbers stay comparable across versions; the synthesis section has its own tests
+    pipe = ResearchPipeline(prefer_live=not args.offline, synthesize=False)
 
     print("[1/5] grounding ...")
     grounding = eval_grounding(pipe)
