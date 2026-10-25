@@ -6,6 +6,7 @@ Endpoints
   POST /jobs              start a report in the background -> 202 {job_id}
   GET  /jobs/{job_id}     poll: queued | running | done | failed
   POST /verify            run the Verification Agent on one claim
+  POST /audit             check every sentence of a pasted text against the data
 
 Configuration (environment or .env — see .env.example)
   FINRESEARCH_API_KEY          if set, every endpoint except /health needs `X-API-Key`
@@ -44,7 +45,7 @@ from pydantic import BaseModel, Field  # noqa: E402
 
 import config  # noqa: E402,F401  (loads .env)
 from data.corpus import DataUnavailableError  # noqa: E402
-from data.universe import COMPANIES, find_tickers, supported_tickers  # noqa: E402
+from data.universe import COMPANIES, UnknownCompanyError, find_tickers, supported_tickers  # noqa: E402
 from logging_setup import setup_logging  # noqa: E402
 from pipeline import ResearchPipeline  # noqa: E402
 
@@ -155,6 +156,12 @@ class VerifyRequest(BaseModel):
         default=None,
         description="Chunks the claim asserts as its source. Omit to verify with no "
                     "citation (citation_consistent will then be false).")
+
+
+class AuditRequest(BaseModel):
+    text: str = Field(min_length=10, max_length=8000)
+    ticker: str | None = Field(default=None, description="Company the text is about; "
+                               "default: the company it names most often.")
 
 
 def _check_ticker(ticker: str | None) -> None:
@@ -290,3 +297,28 @@ def verify_one(req: VerifyRequest):
     claim = Claim.new(agent="external", section="ad-hoc", text=req.text,
                       cited_chunk_ids=req.cited_chunk_ids or [])
     return VerificationAgent(store).verify(claim).to_dict()
+
+
+@app.post("/audit", dependencies=GUARDS)
+async def audit(req: AuditRequest):
+    """Audit someone else's text: every sentence is verified, contradicted,
+    unsupported or uncheckable against the company's live data."""
+    from agents.auditor import audit_text
+
+    _check_ticker(req.ticker)
+
+    def run() -> dict:
+        pipe = get_pipeline()
+        with _semaphore:
+            return audit_text(req.text, pipe, ticker=req.ticker).to_dict()
+
+    loop = asyncio.get_running_loop()
+    try:
+        return await asyncio.wait_for(loop.run_in_executor(_executor, run),
+                                      timeout=REQUEST_TIMEOUT_S)
+    except (UnknownCompanyError, ValueError) as exc:
+        raise HTTPException(422, str(exc)) from None
+    except DataUnavailableError as exc:
+        raise HTTPException(503, str(exc)) from None
+    except asyncio.TimeoutError:
+        raise HTTPException(504, f"audit not finished within {REQUEST_TIMEOUT_S}s") from None

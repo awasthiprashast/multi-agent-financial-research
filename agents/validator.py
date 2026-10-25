@@ -167,6 +167,13 @@ _DN = r"(?:below|under|lower than|less than)"
 _PRICE = r"(?:close|closing price|last close|price|stock|shares)"
 
 
+def _window_keys(tail: str, default: bool) -> List[str]:
+    """Moving averages named in `tail` ("20-day", "200-day"); the 20/50 pair if none is."""
+    keys = [k for w, k in (("20", "sma_20"), ("50", "sma_50"), ("200", "sma_200"))
+            if re.search(rf"(?<!\d){w}(?!\d)", tail)]
+    return keys or (["sma_20", "sma_50"] if default else [])
+
+
 def _direction_conflicts(text: str, ind: dict, closes: list,
                          confirmed: Optional[List[str]] = None) -> List[str]:
     """Qualitative statements the recomputed indicators contradict.
@@ -205,10 +212,7 @@ def _direction_conflicts(text: str, ind: dict, closes: list,
         claims_up = bool(re.match(_UP, m.group(1)))
         tail = m.group(2)
         keys = []
-        if "20" in tail:
-            keys.append("sma_20")
-        if "50" in tail:
-            keys.append("sma_50")
+        keys = _window_keys(tail, default=False)
         keys = keys or ["sma_20", "sma_50"]
         for k in keys:
             avg = ind.get(k)
@@ -225,8 +229,7 @@ def _direction_conflicts(text: str, ind: dict, closes: list,
                       f"close {ind['last_close']} vs {k} {avg}")
 
     def window_keys(tail: str) -> List[str]:
-        keys = [k for w, k in (("20", "sma_20"), ("50", "sma_50")) if w in tail]
-        return keys or ["sma_20", "sma_50"]
+        return _window_keys(tail, default=True)
 
     # continuation clause: "... is higher than the 20-day average but lower than the
     # 50-day average" — the subject (the price) is carried over from the first clause
@@ -405,6 +408,9 @@ class VerificationAgent:
                 ind = agent.compute(st.source_ticker, st.source_prices)
                 for ch in agent.derived_evidence(st.source_ticker, ind, st.source_prices):
                     for cand in extract_numbers(ch.text):
+                        # the 14 in "RSI(14)" is a period, not a value: only a claim that
+                        # writes it the same way, "RSI(14)", may be grounded by it
+                        cand.paren = ch.text[max(0, cand.start - 1):cand.start] == "("
                         facts.append((cand, _evidence_labels(ch.text, cand)))
                 st._recompute_ind = ind
             st._recompute_cache = facts
@@ -443,7 +449,10 @@ class VerificationAgent:
         # The whole claim sentence may name the indicator ("The RSI ... indicates
         # oversold conditions with a value of 23.8"), so labels are matched wide.
         wide = labels | _tokens(claim_text)
+        fact_paren = claim_text[max(0, fact.start - 1):fact.start] == "("
         for cand, lab in self._recomputed():
+            if getattr(cand, "paren", False) and not fact_paren:
+                continue
             if close(cand.normalised) and (not wide or _bound(wide, lab)):
                 return True
 

@@ -132,7 +132,10 @@ class DataCollectionAgent:
             (f"derived_{ticker}_trend",
              f"Computed trend indicators over {window}. Last close ₹{ind['last_close']}. "
              f"20-day simple moving average ₹{ind['sma_20']}. 50-day simple moving "
-             f"average ₹{ind['sma_50']}. RSI(14) is {ind['rsi_14']}. MACD line "
+             f"average ₹{ind['sma_50']}. "
+             + (f"200-day simple moving average ₹{ind['sma_200']}. "
+                if ind["sma_200"] == ind["sma_200"] else "")
+             + f"RSI(14) is {ind['rsi_14']}. MACD line "
              f"{ind['macd_line']} against signal {ind['macd_signal']}, histogram "
              f"{ind['macd_hist']}. Bollinger band upper ₹{ind['bb_upper']}, lower "
              f"₹{ind['bb_lower']}."),

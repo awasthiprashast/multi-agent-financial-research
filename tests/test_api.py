@@ -103,3 +103,16 @@ def _restore_api_module():
     yield
     import api.main as m
     importlib.reload(m)
+
+
+def test_audit_endpoint_classifies_sentences(monkeypatch):
+    m, c = _client(monkeypatch)
+    text = ("Operating margin for the year was 24.3%, a movement of -70 bps against the prior year. "
+            "TCS shares will reach Rs. 5,000 by FY27.")
+    r = c.post("/audit", json={"text": text, "ticker": "TCS.NS"})
+    assert r.status_code == 200
+    body = r.json()
+    assert [s["status"] for s in body["sentences"]] == ["verified", "uncheckable"]
+    assert body["counts"]["verified"] == 1 and body["accuracy"] == 1.0
+    assert c.post("/audit", json={"text": "Margins were 24.3% last year."}).status_code == 422
+    assert c.post("/audit", json={"text": text, "ticker": "NOPE.NS"}).status_code == 422
