@@ -236,9 +236,10 @@ def briefing_tab() -> None:
         return
     _, rep, brief, numbers = saved
 
-    cols = st.columns(len(numbers))
-    for col, (label, value) in zip(cols, numbers):
-        col.metric(label, value)
+    for start in range(0, len(numbers), 4):         # four per row: stays readable on narrow screens
+        row = numbers[start:start + 4]
+        for col, (label, value) in zip(st.columns(4), row):
+            col.metric(label, value)
 
     st.markdown("#### Summary")
     for s in brief.sentences:
