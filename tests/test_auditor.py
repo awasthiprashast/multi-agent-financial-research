@@ -94,3 +94,11 @@ def test_rsi_period_is_not_a_value(pipe):
     r = audit_text("TCS RSI is 14.", pipe, ticker="TCS.NS")
     assert r.sentences[0].status == CONTRADICTED
     assert all(n.actual != "14" for n in r.sentences[0].numbers)
+
+
+def test_a_50_day_average_cannot_be_grounded_by_the_20_day_value(pipe):
+    ind = pipe._prepare("TCS.NS")["indicators"]
+    swapped = audit_text(f"TCS 50-day simple moving average is ₹{ind['sma_20']}.", pipe, ticker="TCS.NS")
+    right = audit_text(f"TCS 50-day simple moving average is ₹{ind['sma_50']}.", pipe, ticker="TCS.NS")
+    assert swapped.sentences[0].status == CONTRADICTED
+    assert right.sentences[0].status == VERIFIED

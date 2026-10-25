@@ -27,7 +27,6 @@ from agents.data_collector import DataCollectionAgent
 from agents.validator import (
     VerificationAgent,
     _bound,
-    _claim_labels,
     _directed_value,
     _evidence_labels,
     _tokens,
@@ -259,17 +258,26 @@ def _drop_period_labels(claim: Claim) -> None:
     claim.numbers = keep
 
 
+_PRICE_WORDS = frozenset({"price", "trading", "traded", "share", "stock", "quote", "close"})
+_NOT_PRICE = frozenset({"earning", "eps", "dividend", "book", "target", "revenue", "profit",
+                        "average", "sma", "volatility", "return", "margin"})
+
+
 def _closest_actual(verifier: VerificationAgent, fact: NumericFact, claim_text: str,
                     evidence_texts: List[str]) -> Optional[NumberCheck]:
     """What the data holds for the quantity this sentence got wrong."""
     target = _directed_value(fact, claim_text)
-    labels = _claim_labels(claim_text, fact)
-    wide = labels | _tokens(claim_text)
+    # words right next to the number only: the whole sentence is too loose to say which
+    # quantity is meant, and a wrong "the data says" is worse than none
+    near = _tokens(claim_text[max(0, fact.start - 40):fact.start] + " "
+                   + claim_text[fact.end:fact.end + 25])
+    if near & _PRICE_WORDS and not near & _NOT_PRICE:
+        near = near | {"close"}
     best = None          # (distance, raw, context)
 
     def consider(cand: NumericFact, lab: set, context: str) -> None:
         nonlocal best
-        if wide and not _bound(wide, lab):
+        if not near or not _bound(near, lab):
             return
         dist = abs(cand.normalised - target) / max(abs(target), 1e-9)
         if best is None or dist < best[0]:

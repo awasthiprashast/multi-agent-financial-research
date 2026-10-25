@@ -103,9 +103,26 @@ _GENERIC = frozenset({"margin", "ratio", "total", "rate", "level", "value", "sco
                       "index", "figure", "percentage", "amount", "number"})
 
 
+# "50-day" and "20-day" differ only by digits, which tokenising drops. Encode the window
+# length as a word ("dayfa", "daycb") so a 50-day average cannot be grounded by a 20-day one.
+_WINDOW = re.compile(r"(\d+)[-\s]?(day|week|month)s?(?![a-z])|(?<![a-z])rsi\s*\((\d+)\)", re.IGNORECASE)
+_WINDOW_TOKEN = re.compile(r"^(?:day|week|month)[a-j]+$")
+
+
+def _encode_window(m: "re.Match[str]") -> str:
+    digits, unit = (m.group(1), m.group(2).lower()) if m.group(1) else (m.group(3), "day")
+    word = unit + "".join(chr(97 + int(d)) for d in digits)
+    return f" {word} " if m.group(1) else f" rsi {word} "
+
+
 def _bound(claim_labels: set, evidence_labels: set) -> bool:
     """Do the two describe the same quantity? Distinguishing words must overlap when
-    the claim has any; only if it has none is a generic word enough."""
+    the claim has any; only if it has none is a generic word enough. If both name a
+    window ("50-day"), they must name the same one."""
+    claimed = {t for t in claim_labels if _WINDOW_TOKEN.match(t)}
+    named = {t for t in evidence_labels if _WINDOW_TOKEN.match(t)}
+    if claimed and named and not claimed & named:
+        return False
     strong = claim_labels - _GENERIC
     return bool(strong & evidence_labels) if strong else bool(claim_labels & evidence_labels)
 
@@ -113,6 +130,7 @@ def _bound(claim_labels: set, evidence_labels: set) -> bool:
 def _tokens(text: str) -> set:
     """Content words of `text`, numbers removed, lightly stemmed and canonicalised."""
     out = set()
+    text = _WINDOW.sub(_encode_window, text)
     for w in _TOKEN.findall(NUM_RE.sub(" ", text).lower()):
         if w in _STOP or len(w) < 2:
             continue
