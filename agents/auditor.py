@@ -258,6 +258,10 @@ def _drop_period_labels(claim: Claim) -> None:
     claim.numbers = keep
 
 
+_EVENT = re.compile("(?<![a-z])(?:crossed|broke|broken|breakout|breakdown|channel|resistance|"
+                    "support level|golden cross|death cross)(?![a-z])", re.I)
+_DATED = re.compile("(?<![a-z])(?:january|february|march|april|june|july|august|september|october|"
+                    "november|december|jan|feb|mar|apr|jun|jul|aug|sept?|oct|nov|dec)(?![a-z])", re.I)
 _PRICE_WORDS = frozenset({"price", "trading", "traded", "share", "stock", "quote", "close"})
 _NOT_PRICE = frozenset({"earning", "eps", "dividend", "book", "target", "revenue", "profit",
                         "average", "sma", "volatility", "return", "margin"})
@@ -388,6 +392,13 @@ def audit_text(text: str, pipeline, ticker: Optional[str] = None) -> AuditResult
             reason = "no figure in the data to compare with: " + ", ".join(verdict.unsupported_numbers)
         elif (claim.numbers and verdict.numeric_support >= 1.0) or (confirmed and not conflicts):
             status, reason = VERIFIED, ""
+            if _EVENT.search(sent) or (not claim.numbers and _DATED.search(sent)):
+                # part of the sentence checks out, but it also asserts dates, chart patterns
+                # or events the data does not hold: never a full "correct"
+                status = UNSUPPORTED
+                held = _plain_direction(confirmed[0]) if confirmed else "the figures"
+                reason = (f"only part of this could be checked ({held}); the rest "
+                          "(dates, chart patterns or events) is not in the data")
         else:
             status = UNSUPPORTED
             reason = reason or "nothing in the data backs this up"

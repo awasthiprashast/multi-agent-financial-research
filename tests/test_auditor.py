@@ -102,3 +102,14 @@ def test_a_50_day_average_cannot_be_grounded_by_the_20_day_value(pipe):
     right = audit_text(f"TCS 50-day simple moving average is ₹{ind['sma_50']}.", pipe, ticker="TCS.NS")
     assert swapped.sentences[0].status == CONTRADICTED
     assert right.sentences[0].status == VERIFIED
+
+
+def test_a_partly_checkable_sentence_is_never_fully_correct(pipe):
+    ind = pipe._prepare("TCS.NS")["indicators"]
+    word = "above" if ind["macd_line"] > ind["macd_signal"] else "below"
+    r = audit_text(f"TCS MACD line is {word} its signal line, after crossing it on October 15.",
+                   pipe, ticker="TCS.NS")
+    assert r.sentences[0].status == "unsupported"
+    assert "only part" in r.sentences[0].reason
+    plain = audit_text(f"TCS MACD line is {word} its signal line.", pipe, ticker="TCS.NS")
+    assert plain.sentences[0].status == VERIFIED
