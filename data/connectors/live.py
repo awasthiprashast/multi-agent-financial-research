@@ -1,25 +1,28 @@
 """
 data/connectors/live.py — real, free data sources.
 
-These are the production connectors. They require outbound network access and
-are the path used on a normal laptop / on the deployed instance. When any of
-them is unavailable, `data.corpus.load_corpus()` transparently falls back to the
-frozen offline snapshot so the system — and the evaluation harness — still runs.
+Live connectors. They need outbound network access. When a source is
+unavailable the failure is logged and None is returned, so the caller can fall
+back to the frozen offline snapshot.
 
 All sources are free tier or public:
-  prices        yfinance (Yahoo), nsepython for NSE-specific series
-  fundamentals  Screener.in (polite, cached), SEC EDGAR for US issuers
-  news          RSS: Moneycontrol, Economic Times, LiveMint
-  macro         RBI data releases / FRED
+  prices        yfinance (Yahoo)
+  fundamentals  yfinance annual statements + headline ratios
+  news          generic RSS (Moneycontrol, Economic Times, LiveMint); the main
+                headline path is data/connectors/gnews.py (Google News)
+  EDGAR         SEC XBRL company facts (US issuers; not used for NSE names)
 """
 
 from __future__ import annotations
 
 import datetime as _dt
 import json
+import logging
 import os
 import time
 from typing import Dict, List, Optional
+
+log = logging.getLogger("live")
 
 CACHE_DIR = os.path.join(os.path.dirname(__file__), "..", "cache")
 os.makedirs(CACHE_DIR, exist_ok=True)
@@ -30,7 +33,7 @@ RSS_FEEDS = [
     "https://www.livemint.com/rss/markets",
 ]
 
-USER_AGENT = "VIT-BCSE497J-ProjectI research assistant (academic use)"
+USER_AGENT = "finresearch-assistant research prototype"
 
 
 def _cache_path(key: str) -> str:
@@ -76,7 +79,8 @@ def fetch_prices(ticker: str, period: str = "1y") -> Optional[Dict[str, list]]:
         }
         _write_cache(f"px_{ticker}_{period}", payload)
         return payload
-    except Exception:
+    except Exception as exc:
+        log.warning("fetch_prices failed: %s: %s", type(exc).__name__, exc)
         return None
 
 
@@ -102,7 +106,8 @@ def fetch_fundamentals(ticker: str) -> Optional[Dict[str, float]]:
         }
         _write_cache(f"fund_{ticker}", payload)
         return payload
-    except Exception:
+    except Exception as exc:
+        log.warning("fetch_fundamentals failed: %s: %s", type(exc).__name__, exc)
         return None
 
 
@@ -162,7 +167,8 @@ def fetch_statements(ticker: str) -> Optional[Dict]:
                    "retrieved": _dt.date.today().isoformat()}
         _write_cache(f"stmt_{ticker}", payload)
         return payload
-    except Exception:
+    except Exception as exc:
+        log.warning("fetch_statements failed: %s: %s", type(exc).__name__, exc)
         return None
 
 
@@ -194,7 +200,8 @@ def fetch_news(query: str, limit: int = 25) -> Optional[List[Dict[str, str]]]:
             return None
         _write_cache(f"news_{query}", {"items": items})
         return items
-    except Exception:
+    except Exception as exc:
+        log.warning("fetch_news failed: %s: %s", type(exc).__name__, exc)
         return None
 
 
@@ -213,7 +220,8 @@ def fetch_edgar_facts(cik: str) -> Optional[dict]:
         payload = r.json()
         _write_cache(f"edgar_{cik}", payload)
         return payload
-    except Exception:
+    except Exception as exc:
+        log.warning("fetch_edgar_facts failed: %s: %s", type(exc).__name__, exc)
         return None
 
 

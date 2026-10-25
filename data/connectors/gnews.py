@@ -26,7 +26,7 @@ from typing import Dict, List
 log = logging.getLogger(__name__)
 
 CACHE_DIR = os.path.join(os.path.dirname(__file__), "..", "cache", "gnews")
-USER_AGENT = "finresearch-assistant academic research (BCSE497J)"
+USER_AGENT = "finresearch-assistant research prototype"
 MIN_GAP_S = 1.5
 FULL = 95                      # a feed this long was probably truncated at ~100
 _last_call = 0.0

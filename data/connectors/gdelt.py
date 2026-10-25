@@ -25,7 +25,7 @@ log = logging.getLogger(__name__)
 
 API = "https://api.gdeltproject.org/api/v2/doc/doc"
 CACHE_DIR = os.path.join(os.path.dirname(__file__), "..", "cache", "gdelt")
-USER_AGENT = "finresearch-assistant academic research (BCSE497J)"
+USER_AGENT = "finresearch-assistant research prototype"
 MIN_GAP_S = 6.0
 _last_call = 0.0
 

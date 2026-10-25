@@ -9,17 +9,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: {python-version: "3.11"}
-      - run: pip install yfinance feedparser requests
-      - name: fetch prices and news
+      - run: pip install -e .
+      - name: fetch prices for every supported company
         run: |
           python - <<'PY'
-          from data.connectors.live import fetch_prices, fetch_news
-          for t in ["TCS.NS", "RELIANCE.NS", "INFY.NS"]:
-              assert fetch_prices(t), f"no prices for {t}"
-          for name in ["Tata Consultancy Services", "Reliance Industries", "Infosys"]:
-              fetch_news(name)
+          from data.universe import COMPANIES
+          from data.connectors.live import fetch_prices
+          missing = [c.ticker for c in COMPANIES if not fetch_prices(c.ticker)]
+          assert not missing, f"no prices for {missing}"
           PY
-      - uses: actions/upload-artifact@v4
-        with:
-          name: data-cache
-          path: data/cache/
