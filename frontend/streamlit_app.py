@@ -11,6 +11,7 @@ Two ways in:
 from __future__ import annotations
 
 import os
+import random
 import sys
 from pathlib import Path
 
@@ -40,10 +41,32 @@ def get_pipeline(threshold: float, analysts: str = "template"):
     return ResearchPipeline(threshold=threshold, analysts=analysts, prefer_live=not OFFLINE)
 
 
-EXAMPLE = (
-    "TCS had a strong year. Operating margin for the year was 26.3%, a movement of -70 bps "
-    "against the prior year. The RSI is 91 and the stock is deeply overbought. "
-    "TCS closed above its 50-day average. TCS shares will reach Rs. 5,000 by FY27."
+@st.cache_resource
+def llm_available() -> bool:
+    from llm import get_llm
+    return get_llm().available
+
+
+def build_example(pipe) -> str:
+    """A fresh example from today's numbers for a random company: some sentences are
+    true, some carry a changed number or a wrong direction, one is a forecast."""
+    ticker = random.choice(TICKERS)
+    ind = pipe._prepare(ticker)["indicators"]
+    name = NAME[ticker]
+    above50 = ind["last_close"] > ind["sma_50"]
+    above20 = ind["last_close"] > ind["sma_20"]
+    return " ".join([
+        f"{name} closed {'above' if above50 else 'below'} its 50-day average.",
+        f"The RSI is {ind['rsi_14']}.",
+        f"{name} annualised volatility of daily returns is {ind['annual_vol_pct'] * 1.6:.1f}%.",
+        f"{name} closed {'below' if above20 else 'above'} its 20-day average.",
+        f"{name} shares will double within two years.",
+    ])
+
+
+EXAMPLE_FALLBACK = (
+    "TCS closed above its 50-day average. The RSI is 91. "
+    "Annualised volatility of daily returns is 5.0%. TCS shares will double within two years."
 )
 
 BADGE = {
@@ -70,7 +93,11 @@ def audit_tab(threshold: float) -> None:
         "are **never** marked as verified.")
 
     if st.button("Load an example"):
-        st.session_state["audit_text"] = EXAMPLE
+        try:
+            with st.spinner("Building an example from today's data…"):
+                st.session_state["audit_text"] = build_example(get_pipeline(threshold))
+        except DataUnavailableError:
+            st.session_state["audit_text"] = EXAMPLE_FALLBACK
     text = st.text_area("Text to audit", key="audit_text", height=180, max_chars=8000,
                         placeholder="Paste an analyst note, news summary or chatbot answer…")
     ticker_choice = st.selectbox(
@@ -137,10 +164,14 @@ def report_tab(threshold: float) -> None:
     st.subheader("Multi-agent research report")
     ticker = st.selectbox("Company", TICKERS, format_func=lambda t: f"{NAME[t]} ({t})",
                           key="report_ticker")
-    use_llm = st.checkbox("LLM analysts", value=False,
-                          help="Analysts write claims with a language model (needs GROQ_API_KEY "
-                               "or a local Ollama). Slower; every claim is still verified.")
-    query = st.text_input("Research question", "Should I look at TCS for a 1-year hold?")
+    has_llm = llm_available()
+    use_llm = st.checkbox("LLM analysts", value=False, disabled=not has_llm,
+                          help="Analysts write claims with a language model; every claim is "
+                               "still verified. Needs GROQ_API_KEY (or a local Ollama).")
+    if not has_llm:
+        st.caption("LLM analysts are off: no language-model backend is configured on this "
+                   "server. The deterministic template analysts are used.")
+    query = st.text_input("Research question", f"Give me a full report on {NAME[ticker]}")
 
     if st.button("Run research", type="primary"):
         st.session_state["ran"] = True
