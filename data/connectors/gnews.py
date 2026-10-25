@@ -32,8 +32,8 @@ FULL = 95                      # a feed this long was probably truncated at ~100
 _last_call = 0.0
 
 
-def _cache_file(query: str, start: dt.date, end: dt.date) -> str:
-    key = hashlib.sha1(f"{query}|{start}|{end}".encode()).hexdigest()[:16]
+def _cache_file(query: str, start: dt.date, end: dt.date, split: bool = True) -> str:
+    key = hashlib.sha1(f"{query}|{start}|{end}|{'' if split else 'top'}".encode()).hexdigest()[:16]
     return os.path.join(CACHE_DIR, f"{key}.json")
 
 
@@ -77,13 +77,16 @@ def _request(query: str, start: dt.date, end: dt.date, attempts: int = 5) -> Lis
     raise RuntimeError(f"gnews: giving up on {q}")
 
 
-def fetch_window(query: str, start: dt.date, end: dt.date) -> List[Dict]:
-    path = _cache_file(query, start, end)
+def fetch_window(query: str, start: dt.date, end: dt.date, split: bool = True) -> List[Dict]:
+    """Headlines for [start, end]. With split=False one request is enough: the feed's
+    newest ~100 items, which is all a live report needs; the study splits a busy window
+    so that none is truncated."""
+    path = _cache_file(query, start, end, split)
     if os.path.exists(path):
         with open(path, "r", encoding="utf-8") as fh:
             return json.load(fh)
     items = _request(query, start, end)
-    if len(items) >= FULL and end > start:
+    if split and len(items) >= FULL and end > start:
         mid = start + (end - start) // 2
         items = fetch_window(query, start, mid) + fetch_window(query, mid + dt.timedelta(days=1), end)
     os.makedirs(CACHE_DIR, exist_ok=True)

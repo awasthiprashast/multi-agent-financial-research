@@ -262,6 +262,15 @@ def _live_fundamentals_chunk(ticker: str):
                  meta={"provenance": f.get("provenance", "yfinance.info")})
 
 
+def _live_statements_chunk(ticker: str):
+    try:
+        from data.connectors.live import fetch_statements
+        return statements_chunk(ticker, fetch_statements(ticker))
+    except Exception as exc:
+        log.warning("statements for %s unavailable (%s)", ticker, exc)
+        return None
+
+
 LIVE_NEWS_DAYS = 30
 LIVE_NEWS_MAX = 40
 
@@ -274,12 +283,12 @@ def _live_news_chunks(ticker: str, rss_fallback) -> List[Chunk]:
     co = BY_TICKER.get(ticker)
     items: List[dict] = []
     try:
-        from data.connectors.gnews import fetch_range
+        from data.connectors.gnews import fetch_window
 
         end = dt.date.today()
         start = end - dt.timedelta(days=LIVE_NEWS_DAYS)
-        raw = fetch_range(co.news_query if co else COMPANY_NAME.get(ticker, ticker),
-                          start, end, window_days=15)
+        raw = fetch_window(co.news_query if co else COMPANY_NAME.get(ticker, ticker),
+                           start, end, split=False)
         named = [i for i in raw if mentions(i["title"], ticker)]
         named.sort(key=lambda i: i["seendate"], reverse=True)
         for i in named[:LIVE_NEWS_MAX]:
@@ -321,14 +330,23 @@ def load_corpus(ticker: str, prefer_live: bool = True):
     mode = "snapshot"
     prices = None
 
+    live_extra: List[Chunk] = []
     if prefer_live:
         try:
+            from concurrent.futures import ThreadPoolExecutor
+
             from data.connectors.live import fetch_news, fetch_prices
 
-            prices = fetch_prices(ticker)
-            if prices:
-                mode = "live"
-                chunks.extend(_live_news_chunks(ticker, fetch_news))
+            # four independent network calls: run them side by side
+            with ThreadPoolExecutor(max_workers=4) as pool:
+                f_news = pool.submit(_live_news_chunks, ticker, fetch_news)
+                f_fund = pool.submit(_live_fundamentals_chunk, ticker)
+                f_stmt = pool.submit(_live_statements_chunk, ticker)
+                prices = fetch_prices(ticker)
+                if prices:
+                    mode = "live"
+                    chunks.extend(f_news.result())
+                    live_extra = [c for c in (f_fund.result(), f_stmt.result()) if c is not None]
         except Exception as exc:
             log.warning("live data for %s failed (%s)", ticker, exc)
             prices = None
@@ -355,17 +373,7 @@ def load_corpus(ticker: str, prefer_live: bool = True):
                                 published="2026-04-18",
                                 meta={"provenance": "synthetic-demo"}))
     else:
-        fund_chunk = _live_fundamentals_chunk(ticker)
-        if fund_chunk is not None:
-            chunks.append(fund_chunk)
-        try:
-            from data.connectors.live import fetch_statements
-            stmt_chunk = statements_chunk(ticker, fetch_statements(ticker))
-        except Exception as exc:
-            log.warning("statements for %s unavailable (%s)", ticker, exc)
-            stmt_chunk = None
-        if stmt_chunk is not None:
-            chunks.append(stmt_chunk)
+        chunks.extend(live_extra)
 
     if mode == "snapshot":
         for src, text, label in _news_items(ticker, rng):

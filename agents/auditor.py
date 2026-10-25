@@ -88,6 +88,8 @@ class AuditedSentence:
     directions_confirmed: List[str] = field(default_factory=list)
     directions_contradicted: List[str] = field(default_factory=list)
     evidence: List[Evidence] = field(default_factory=list)
+    explanation: str = ""                # plain-English reason for the verdict
+    correction: Optional[str] = None     # the sentence rewritten with the data's values
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -117,14 +119,44 @@ class AuditResult:
     def coverage(self) -> float:
         return round(self.checkable / len(self.sentences), 3) if self.sentences else 0.0
 
+    @property
+    def headline(self) -> str:
+        c = self.counts
+        if not self.checkable:
+            return ("None of these sentences contains a number or price statement the data "
+                    "can check, so nothing could be confirmed or disproved.")
+        wrong = c[CONTRADICTED] + c[UNSUPPORTED]
+        if wrong == 0:
+            return f"All {self.checkable} checkable statements match the data."
+        return (f"{c[VERIFIED]} of {self.checkable} checkable statements match the data; "
+                f"{wrong} {'does' if wrong == 1 else 'do'} not.")
+
+    @property
+    def corrected_text(self) -> str:
+        """The text with every wrong figure or direction replaced by what the data says."""
+        return " ".join(s.correction or s.text for s in self.sentences)
+
     def to_dict(self) -> dict:
         return {"tickers": self.tickers, "counts": self.counts, "checkable": self.checkable,
                 "accuracy": self.accuracy, "coverage": self.coverage,
+                "headline": self.headline, "corrected_text": self.corrected_text,
                 "truncated": self.truncated,
                 "sentences": [s.to_dict() for s in self.sentences]}
 
 
 # ---------------------------------------------------------------- splitting
+_DASHES = re.compile("[‐-―]")                 # non-breaking hyphen, en/em dash ...
+_CITE_MARKS = re.compile(r"【[^】]*】|\[\d{1,3}\]")   # 【6】 and [3] left by chatbots
+
+
+def normalise(text: str) -> str:
+    """Make chatbot typography comparable: "20‑day" (non-breaking hyphen) must read as
+    "20-day", and citation markers such as 【6】 or [3] are not numbers."""
+    text = _CITE_MARKS.sub("", text)
+    text = text.replace(" ", " ").replace("’", "'").replace("‘", "'")
+    return _DASHES.sub("-", text)
+
+
 def split_sentences(text: str) -> List[str]:
     """Sentences of `text`: bullets and line breaks end a sentence, decimals and
     abbreviations such as "Rs. 100" do not."""
@@ -143,6 +175,73 @@ def split_sentences(text: str) -> List[str]:
 
 
 # ------------------------------------------------------------------ helpers
+_FLIP = (("above", "below"), ("higher than", "lower than"), ("over", "under"),
+         ("increased", "decreased"), ("rose", "fell"), ("positive", "negative"),
+         ("overbought", "oversold"))
+
+
+def _plain_direction(desc: str) -> str:
+    """"close 1153.8 vs sma_20 1057.81" -> a sentence a reader can follow."""
+    m = re.match(r"close ([\d.]+) vs sma_(\d+) ([\d.]+)", desc)
+    if m:
+        c, n, a = float(m.group(1)), m.group(2), float(m.group(3))
+        return (f"the last close (₹{c:,.2f}) is {'above' if c > a else 'below'} the "
+                f"{n}-day average (₹{a:,.2f})")
+    m = re.match(r"MACD ([-\d.]+) vs signal ([-\d.]+)", desc)
+    if m:
+        x, y = float(m.group(1)), float(m.group(2))
+        return f"the MACD line ({x}) is {'above' if x > y else 'below'} its signal line ({y})"
+    m = re.match(r"RSI ([\d.]+) is (\w+)", desc)
+    if m:
+        return f"the RSI is {m.group(1)}, which is in the {m.group(2)} zone"
+    return desc
+
+
+def _flips(sentence: str) -> List[str]:
+    """Every way of reversing one direction word in the sentence."""
+    out = []
+    for a, b in _FLIP:
+        for x, y in ((a, b), (b, a)):
+            pat = re.compile("(?<![a-z])" + re.escape(x) + "(?![a-z])", re.I)
+            if pat.search(sentence):
+                out.append(pat.sub(y, sentence, count=1))
+    return out
+
+
+def _explain(s: AuditedSentence, holds) -> None:
+    """Fill in the plain-English explanation and, where one exists that the data
+    confirms, a corrected sentence. `holds(text)` re-checks a rewritten sentence."""
+    if s.status == UNCHECKABLE:
+        s.explanation = s.reason[:1].upper() + s.reason[1:] + "."
+        return
+    parts: List[str] = []
+    fixed = s.text
+    for n in s.numbers:
+        if n.matched:
+            continue
+        if n.actual:
+            parts.append(f"The data says {n.actual}, not {n.raw}.")
+            fixed = fixed.replace(n.raw, n.actual, 1)
+        else:
+            parts.append(f"{n.raw} does not appear in the data.")
+    for d in s.directions_contradicted:
+        parts.append(f"Wrong: {_plain_direction(d)}.")
+    if s.status == VERIFIED:
+        bits = [f"{n.raw} matches the data." for n in s.numbers]
+        bits += [f"Correct: {_plain_direction(d)}." for d in s.directions_confirmed]
+        s.explanation = " ".join(bits) or "Matches the data."
+        return
+    if s.status == UNSUPPORTED:
+        s.explanation = "Nothing in the data confirms or contradicts this."
+        return
+    s.explanation = " ".join(parts) or (s.reason[:1].upper() + s.reason[1:] + ".")
+    # offer a rewrite only if the data confirms the rewritten sentence
+    for candidate in [fixed] + _flips(fixed):
+        if candidate != s.text and holds(candidate):
+            s.correction = candidate
+            break
+
+
 def _drop_period_labels(claim: Claim) -> None:
     """Remove numbers that only name a period (FY25, Q2, "March 31")."""
     keep: List[NumericFact] = []
@@ -207,6 +306,7 @@ def audit_text(text: str, pipeline, ticker: Optional[str] = None) -> AuditResult
     `ticker` is the company the text is about; if omitted it is the company the text
     names most often. A sentence that names a different supported company is checked
     against that company's data instead."""
+    text = normalise(text)
     truncated = len(text) > MAX_CHARS
     sentences = split_sentences(text[:MAX_CHARS])
     if len(sentences) > MAX_SENTENCES:
@@ -277,4 +377,18 @@ def audit_text(text: str, pipeline, ticker: Optional[str] = None) -> AuditResult
         results.append(AuditedSentence(
             i, sent, tic, status, reason, checks, list(confirmed), list(conflicts), evidence))
 
+    def holds_for(tic: str):
+        verifier = verifiers[tic]
+
+        def holds(text: str) -> bool:
+            c = Claim.new("external", "audit", text)
+            _drop_period_labels(c)
+            conflicts, confirmed = verifier._logic_check(c)
+            v = verifier.verify(c)
+            return not v.unsupported_numbers and not conflicts and (
+                (bool(c.numbers) and v.numeric_support >= 1.0) or bool(confirmed))
+        return holds
+
+    for s in results:
+        _explain(s, holds_for(s.ticker) if s.ticker in verifiers else (lambda _t: False))
     return AuditResult(results, sorted({s.ticker for s in results if s.ticker}), truncated)
