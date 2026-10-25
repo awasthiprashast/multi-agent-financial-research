@@ -52,8 +52,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: {python-version: "3.11"}
-      - run: pip install pip-audit && pip install -e ".[api,llm,ui]"
-      - run: pip-audit --skip-editable
+      # setuptools is build tooling, not a runtime dependency: upgrade it so it is not flagged
+      - run: pip install -U pip-audit setuptools && pip install -e ".[api,llm,ui]"
+      # chromadb has no fixed release yet. It is optional (the evidence store falls back to
+      # numpy) and runs in-process, never exposed as a server. Re-check when one ships.
+      - run: |
+          pip-audit --skip-editable             --ignore-vuln PYSEC-2026-311 --ignore-vuln PYSEC-2026-3813             --ignore-vuln PYSEC-2026-3814 --ignore-vuln PYSEC-2026-3815
 
   docker:
     runs-on: ubuntu-latest
