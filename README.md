@@ -1,13 +1,32 @@
-﻿# Multi-Agent Financial Research Assistant
+﻿# Claim Auditor for Financial Text
 
-A multi-agent research system that decomposes a financial research question
-across specialist agents and — the part that matters — **re-checks every claim
-against its source evidence before the user is allowed to see it**.
+Paste what an analyst, a news site or a chatbot wrote about a listed company and see,
+**sentence by sentence, what the data actually supports**.
 
-Retrieval-augmented generation grounds the *input* to a generator. Nothing in a
-standard RAG or multi-agent stack re-checks the *output*. This project adds that
-missing step, runs it on claims written by a real language model, and measures
-what it buys.
+Language models write confident financial prose and get numbers and directions wrong.
+This tool does not ask another model for an opinion. It re-checks each sentence against
+real prices, statements and news, with deterministic rules, so every verdict has an
+auditable reason:
+
+| Verdict | Meaning |
+|---|---|
+| ✅ verified | every number matched the data (same value, same label) and/or the direction statement agrees with indicators recomputed from raw prices |
+| ❌ contradicted | a number the data does not hold (the closest real value is shown), a direction the prices contradict, or facts attributed to the wrong company |
+| ⚠️ unsupported | checkable, but nothing in the data backs it |
+| ➖ not checkable | forecasts, opinions, prose with no number or indicator statement. Reported, never silently passed |
+
+```text
+"Operating margin for the year was 26.3%."   ->  ❌ 26.3% is not in the data; closest value is 24.3%
+"The RSI is 91 and the stock is overbought." ->  ❌ 91 is not in the data; recomputed RSI is 23.8
+"TCS shares will reach Rs. 5,000 by FY27."   ->  ➖ forecast; cannot be checked against past data
+```
+
+Under it sits a multi-agent research pipeline (router, four specialist analysts, a
+Verification Agent, bounded revision) that writes cited reports whose every claim is
+verified the same way. The auditor is that verifier pointed at text somebody else wrote.
+
+Use it three ways: the Streamlit app (**Audit a text** tab), `POST /audit` on the API, or
+`from agents.auditor import audit_text`.
 
 > Academic prototype. Not investment advice.
 
@@ -88,7 +107,7 @@ Reproduce with `python -m eval.run_all --offline` (deterministic TF-IDF embedder
 and lexicon scorer; `--embedder neural --scorer finbert` for the neural stack).
 Every number below is in `results/`.
 
-### 1. Perturbation benchmark (synthetic) — `results/metrics_new_tfidf.json`
+### 1. Perturbation benchmark (synthetic) — `results/metrics.json`
 
 162 claims: 81 genuine agent claims, each paired with one injected defect (numeric
 drift, numeric swap, entity swap, fabricated detail).
@@ -225,14 +244,14 @@ features.
 ## Quick start
 
 ```bash
-pip install -e ".[all,dev]"        # or just `pip install -e .` for the small core
+pip install -e ".[all,dev]"        # (requirements-dev.txt) or just `pip install -e .` for the small core
 
 python pipeline.py "Should I look at TCS for a 1-year hold?" --offline   # CLI, synthetic corpus
 python pipeline.py "Give me a full report on HDFC Bank"                  # CLI, live data (12 companies)
 python pipeline.py "Complete analysis of TCS" --offline --llm            # LLM analysts
-streamlit run frontend/streamlit_app.py                                  # demo UI
-uvicorn api.main:app --reload                                            # REST API
-python -m pytest tests/ -q                                               # 98 tests, ~40 s
+streamlit run frontend/streamlit_app.py                                  # demo UI: audit a text + research report
+uvicorn api.main:app --reload                                            # REST API (/audit, /research, /verify)
+python -m pytest tests/ -q                                               # 107 tests, ~40 s
 python -m eval.run_all --offline                                         # benchmark + ablation + router
 python -m eval.llm_eval --seed 7                                         # LLM claims evaluation
 python -m eval.sentiment_study all                                       # headlines -> FinBERT -> correlation
@@ -283,6 +302,7 @@ agents/
   llm_analysts.py       LLM analysts (claims written by a model)
   synthesis.py          "Overall view": agree / diverge across the specialists
   validator.py          ★ the verification mechanism
+  auditor.py            audits pasted text sentence by sentence (uses the validator)
   report_generator.py   cited report, confidence badges, withheld claims
 api/                    FastAPI service (auth, rate limit, background jobs)
 rag/                    embedder (pluggable) + evidence store
@@ -292,7 +312,7 @@ data/
   connectors/           yfinance, Google News, GDELT, RSS
 eval/                   perturbation benchmark, ablation, LLM eval, sentiment study, router test set
 results/                every reported number
-tests/                  98 tests, ~80 % line coverage
+tests/                  107 tests, ~80 % line coverage
 ```
 
 ## Known limitations

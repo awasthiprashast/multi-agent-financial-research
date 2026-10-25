@@ -3,6 +3,17 @@
 This is a research prototype hardened for a small deployment (one host, a handful of
 users). Read **Limits** before putting it in front of the public.
 
+## Public demo (free): Streamlit Community Cloud
+
+1. Push the repository to GitHub (a private repo works; you authorise Streamlit to read it).
+2. At share.streamlit.io choose **New app**, pick the repo, branch `main`, main file
+   `frontend/streamlit_app.py`. It installs the lean root `requirements.txt` (no PyTorch).
+3. Leave secrets empty. The audit tab needs no API key; Yahoo Finance and Google News are
+   read directly. If Yahoo throttles the shared cloud IP, the app shows a data-unavailable
+   message; retry later or set `FINRESEARCH_OFFLINE=1` under *Advanced settings -> Secrets*
+   (`FINRESEARCH_OFFLINE = "1"`) to serve the three synthetic snapshot companies.
+4. Put the app URL at the top of the README.
+
 ## 1. Configure
 
 ```bash

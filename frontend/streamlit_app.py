@@ -1,14 +1,16 @@
 """
 frontend/streamlit_app.py — the demo UI.  Run: streamlit run frontend/streamlit_app.py
 
-Built around one idea: the interesting part of this system is not the report, it
-is the audit trail. So the UI shows the confidence on every sentence, lets the
-reviewer expand the exact source chunk behind it, and — the slide that lands —
-shows what the Verification Agent refused to print.
+Two ways in:
+  * Audit a text — paste anything written about a listed company (a broker note, a
+    chatbot answer) and see which sentences the data supports, which it contradicts
+    and which cannot be checked at all.
+  * Research report — the multi-agent pipeline writes a report and verifies it.
 """
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -16,78 +18,156 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import streamlit as st  # noqa: E402
 
+from agents.auditor import (  # noqa: E402
+    CONTRADICTED,
+    UNCHECKABLE,
+    UNSUPPORTED,
+    VERIFIED,
+    audit_text,
+)
 from data.corpus import DataUnavailableError  # noqa: E402
-from data.universe import COMPANIES, NAME, UnknownCompanyError  # noqa: E402
+from data.universe import NAME, UnknownCompanyError, supported_tickers  # noqa: E402
 from pipeline import ResearchPipeline  # noqa: E402
 
-st.set_page_config(page_title="Multi-Agent Financial Research Assistant",
-                   layout="wide")
+OFFLINE = os.environ.get("FINRESEARCH_OFFLINE", "") in ("1", "true", "yes")
+TICKERS = supported_tickers(offline=OFFLINE)
+
+st.set_page_config(page_title="Claim Auditor for Financial Text", layout="wide")
 
 
 @st.cache_resource
 def get_pipeline(threshold: float, analysts: str = "template"):
-    return ResearchPipeline(threshold=threshold, analysts=analysts)
+    return ResearchPipeline(threshold=threshold, analysts=analysts, prefer_live=not OFFLINE)
 
 
-st.title("Multi-Agent Financial Research Assistant")
-st.caption("Every claim is re-checked against its source before you see it. "
-           "BCSE497J Project-I · SCOPE, VIT")
+EXAMPLE = (
+    "TCS had a strong year. Operating margin for the year was 26.3%, a movement of -70 bps "
+    "against the prior year. The RSI is 91 and the stock is deeply overbought. "
+    "TCS closed above its 50-day average. TCS shares will reach Rs. 5,000 by FY27."
+)
 
-with st.sidebar:
-    st.header("Settings")
-    threshold = st.slider("Confidence threshold θ", 0.0, 1.0, 0.60, 0.05,
-                          help="Claims scoring below this are withheld.")
-    ticker = st.selectbox("Company", [c.ticker for c in COMPANIES],
-                          format_func=lambda t: f"{NAME[t]} ({t})",
-                          help="Live data. Only TCS, Reliance and Infosys have an offline "
-                               "synthetic snapshot.")
+BADGE = {
+    VERIFIED: ("✅", "Verified", "success"),
+    CONTRADICTED: ("❌", "Contradicted", "error"),
+    UNSUPPORTED: ("⚠️", "Unsupported", "warning"),
+    UNCHECKABLE: ("➖", "Not checkable", "info"),
+}
+
+
+def show_evidence(rows) -> None:
+    for e in rows:
+        st.markdown(f"**{e.source}** · {e.doc_type} · {e.published}")
+        st.write(e.text)
+
+
+def audit_tab(threshold: float) -> None:
+    st.subheader("Audit a text against real data")
+    st.markdown(
+        "Paste a paragraph about one of the listed companies. Every sentence is checked "
+        "against Yahoo Finance prices and statements and recent news. Numbers must match "
+        "the data (same value, same label), and statements like *“closed above its "
+        "50-day average”* are recomputed from the raw price series. Forecasts and opinions "
+        "are **never** marked as verified.")
+
+    if st.button("Load an example"):
+        st.session_state["audit_text"] = EXAMPLE
+    text = st.text_area("Text to audit", key="audit_text", height=180, max_chars=8000,
+                        placeholder="Paste an analyst note, news summary or chatbot answer…")
+    ticker_choice = st.selectbox(
+        "Company the text is about", ["Detect from the text"] + TICKERS,
+        format_func=lambda t: t if t.startswith("Detect") else f"{NAME[t]} ({t})")
+
+    if not st.button("Audit", type="primary"):
+        return
+    if not text.strip():
+        st.warning("Paste some text first.")
+        return
+    try:
+        with st.spinner("Fetching data and checking each sentence…"):
+            result = audit_text(
+                text, get_pipeline(threshold),
+                ticker=None if ticker_choice.startswith("Detect") else ticker_choice)
+    except (UnknownCompanyError, DataUnavailableError, ValueError) as exc:
+        st.error(str(exc))
+        return
+
+    counts = result.counts
+    c1, c2, c3, c4, c5 = st.columns(5)
+    c1.metric("Verified", counts[VERIFIED])
+    c2.metric("Contradicted", counts[CONTRADICTED])
+    c3.metric("Unsupported", counts[UNSUPPORTED])
+    c4.metric("Not checkable", counts[UNCHECKABLE])
+    c5.metric("Accuracy of checkable", "n/a" if result.accuracy is None
+              else f"{result.accuracy * 100:.0f}%")
+    st.caption(f"{result.checkable} of {len(result.sentences)} sentences could be checked "
+               f"({result.coverage * 100:.0f}% coverage) · companies: "
+               + ", ".join(NAME[t] for t in result.tickers)
+               + (" · text truncated" if result.truncated else ""))
+
+    for s in result.sentences:
+        icon, label, kind = BADGE[s.status]
+        getattr(st, kind)(f"{icon} **{label}** — {s.text}")
+        notes = []
+        for n in s.numbers:
+            if n.matched:
+                notes.append(f"`{n.raw}` matches the data")
+            elif n.actual:
+                notes.append(f"`{n.raw}` is not in the data; closest value for the same "
+                             f"quantity is **{n.actual}**")
+            else:
+                notes.append(f"`{n.raw}` is not in the data")
+        notes += [f"direction confirmed: {d}" for d in s.directions_confirmed]
+        notes += [f"direction contradicted: {d}" for d in s.directions_contradicted]
+        if s.reason and not s.numbers:
+            notes.append(s.reason)
+        elif s.reason and s.status == UNCHECKABLE:
+            notes.append(s.reason)
+        if notes:
+            st.caption(" · ".join(notes))
+        if s.evidence and s.status != UNCHECKABLE:
+            with st.expander("Evidence this was checked against"):
+                show_evidence(s.evidence)
+
+    st.info("“Verified” means the numbers and indicator statements match the data. It does "
+            "not mean the sentence's conclusion is right. Research prototype, not "
+            "investment advice.")
+
+
+def report_tab(threshold: float) -> None:
+    st.subheader("Multi-agent research report")
+    ticker = st.selectbox("Company", TICKERS, format_func=lambda t: f"{NAME[t]} ({t})",
+                          key="report_ticker")
     use_llm = st.checkbox("LLM analysts", value=False,
-                          help="Analysts write claims with a language model (Groq if "
-                               "GROQ_API_KEY is set, else local Ollama). Slower; every "
-                               "claim is still verified.")
-    st.divider()
-    st.markdown("**Verification mechanism**")
-    st.markdown("1. independent re-retrieval\n2. numeric adjudication\n"
-                "3. semantic adjudication\n4. citation consistency\n"
-                "5. entity binding\n6. bounded revision loop")
+                          help="Analysts write claims with a language model (needs GROQ_API_KEY "
+                               "or a local Ollama). Slower; every claim is still verified.")
+    query = st.text_input("Research question", "Should I look at TCS for a 1-year hold?")
 
-query = st.text_input("Research question",
-                      "Should I look at TCS for a 1-year hold?")
+    if st.button("Run research", type="primary"):
+        st.session_state["ran"] = True
 
-if st.button("Run research", type="primary"):
-    st.session_state["ran"] = True
-
-# The results live behind session state rather than behind the button itself.
-# Streamlit re-runs the whole script on every widget interaction, so gating the
-# results on `if st.button(...)` would make them disappear the moment anyone
-# typed in the probe box below or moved the threshold slider.
-if st.session_state.get("ran"):
+    # Results live behind session state: Streamlit re-runs the script on every widget
+    # interaction, so gating them on the button alone would make them vanish.
+    if not st.session_state.get("ran"):
+        return
     try:
         pipe = get_pipeline(threshold, "llm" if use_llm else "template")
-    except RuntimeError as exc:
-        st.error(f"{exc}")
-        st.stop()
-    try:
         with st.spinner("Agents working…"):
             rep = pipe.run(query, ticker=ticker)
-    except (UnknownCompanyError, DataUnavailableError) as exc:
+    except (RuntimeError, UnknownCompanyError, DataUnavailableError) as exc:
         st.error(str(exc))
-        st.stop()
+        return
 
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Grounding rate", f"{rep.grounding_rate * 100:.0f}%")
-    c2.metric("Claims surfaced",
-              f"{rep.surfaced_count}"
-              f"/{len(rep.verdicts)}")
+    c2.metric("Claims surfaced", f"{rep.surfaced_count}/{len(rep.verdicts)}")
     c3.metric("Agents invoked", len(rep.agents_invoked))
     c4.metric("Latency", f"{rep.timings['total_s'] * 1000:.0f} ms")
-
     st.caption(f"Router selected: {', '.join(rep.agents_invoked)} · "
                f"corpus: {rep.mode} · analysts: {rep.analysts}")
 
     store = rep.store
     for section, claims in rep.sections.items():
-        st.subheader(section)
+        st.markdown(f"#### {section}")
         for c in claims:
             v = rep.verdicts[c.claim_id]
             bar = "🟢" if v.confidence >= 0.85 else "🟡" if v.confidence >= 0.7 else "🟠"
@@ -103,55 +183,36 @@ if st.session_state.get("ran"):
                         st.markdown(f"**{ch.source}** · {ch.doc_type} · {ch.published}")
                         st.write(ch.text)
 
-    st.subheader("Withheld by the Verification Agent")
+    st.markdown("#### Withheld by the Verification Agent")
     if rep.withheld:
         for claim, v in rep.withheld:
             st.error(f"“{claim.text}”\n\nconfidence {v.confidence:.2f} — {v.reason}")
     else:
         st.success("Nothing was withheld: every generated claim passed verification.")
-
-    st.divider()
     st.warning("Research output from an academic prototype. Not investment advice.")
 
 
-# --------------------------------------------------------------------------
-# The probe sits outside the results block so it is available at any time and
-# survives a re-run. This is the demonstration that lands: paste a true claim,
-# then change one digit.
-# --------------------------------------------------------------------------
-st.divider()
-st.subheader("Check any claim yourself")
-st.caption("Paste a statement about the selected company. Change a single digit "
-           "and watch the confidence collapse — the sentence still reads perfectly.")
+st.title("Claim Auditor for Financial Text")
+st.caption("Paste what someone (or a chatbot) wrote about a stock and see which sentences "
+           "the data actually supports. Research prototype · not investment advice.")
 
-probe = st.text_input("Claim to verify", key="probe",
-                      placeholder="Operating margin for the year was 24.3%, a movement "
-                                  "of -70 bps against the prior year.")
+with st.sidebar:
+    st.header("Settings")
+    threshold = st.slider("Confidence threshold θ", 0.0, 1.0, 0.60, 0.05,
+                          help="Used by the research-report tab; claims scoring below it "
+                               "are withheld.")
+    st.divider()
+    st.markdown("**How a sentence is checked**\n\n"
+                "1. numbers matched to data with their label\n"
+                "2. indicators recomputed from raw prices\n"
+                "3. direction statements tested\n"
+                "4. company named must match the data\n"
+                "5. forecasts and opinions set aside")
+    st.caption(f"Data: {'offline snapshot' if OFFLINE else 'live Yahoo Finance + Google News'} "
+               f"· {len(TICKERS)} companies")
 
-if probe:
-    from agents.validator import VerificationAgent
-    from core import Claim
-
-    s = get_pipeline(threshold, "template")._prepare(ticker)["store"]
-    cl = Claim.new("external", "ad-hoc", probe)
-    cl.cited_chunk_ids = [c.chunk_id for c, _ in s.query(probe, k=3, ticker=ticker)]
-    verdict = VerificationAgent(s, threshold=threshold).verify(cl)
-
-    passed = verdict.status == "verified"
-    m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Verdict", "ACCEPTED" if passed else "WITHHELD")
-    m2.metric("Confidence", f"{verdict.confidence:.2f}")
-    m3.metric("Numeric support", f"{verdict.numeric_support:.2f}")
-    m4.metric("Semantic support", f"{verdict.semantic_support:.2f}")
-
-    if passed:
-        st.success("Every quantity in this claim was matched against retrieved evidence.")
-    else:
-        st.error(verdict.reason or "Below the confidence threshold.")
-
-    with st.expander("Evidence the claim was checked against"):
-        for cid in verdict.supporting_chunk_ids:
-            ch = s.get(cid)
-            if ch:
-                st.markdown(f"**{ch.source}** · {ch.doc_type} · {ch.published}")
-                st.write(ch.text)
+tab_audit, tab_report = st.tabs(["Audit a text", "Research report"])
+with tab_audit:
+    audit_tab(threshold)
+with tab_report:
+    report_tab(threshold)

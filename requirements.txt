@@ -1,6 +1,10 @@
-# Convenience install for development: everything, including the heavy neural stack.
-# Minimal / selective installs are defined in pyproject.toml, e.g.
-#   pip install -e .                 # core only (TF-IDF embeddings, lexicon sentiment)
-#   pip install -e ".[api,llm]"      # API + Groq analysts
-#   pip install -e ".[all,dev]"      # everything + test tools
--e .[all,dev]
+# Lean install for the hosted demo (Streamlit Community Cloud, Hugging Face Spaces).
+# TF-IDF embeddings + lexicon sentiment, no PyTorch. ChromaDB is optional: the evidence
+# store falls back to numpy without it. For development use requirements-dev.txt.
+numpy>=1.26,<3
+scikit-learn>=1.4,<2
+scipy>=1.11,<2
+requests>=2.31,<3
+yfinance>=0.2.40,<2
+feedparser>=6,<7
+streamlit>=1.35,<2
