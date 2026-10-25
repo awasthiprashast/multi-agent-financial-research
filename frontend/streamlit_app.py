@@ -21,6 +21,27 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import streamlit as st  # noqa: E402
 
+_ROOT = Path(__file__).resolve().parents[1]
+_PROJECT_MODULES = {"agents", "data", "rag", "api", "core", "pipeline", "llm", "config",
+                    "sentiment_model", "logging_setup"}
+
+
+def _reload_if_code_changed() -> None:
+    """Streamlit keeps imported modules alive across redeploys, so after a deploy the page
+    could run new app code against an old `agents.auditor`. If any project file is newer
+    than what this process loaded, drop the project's modules and caches and import fresh."""
+    stamp = max(p.stat().st_mtime for p in _ROOT.rglob("*.py") if ".git" not in p.parts)
+    seen = getattr(sys, "_finresearch_stamp", None)
+    loaded = any(m.split(".")[0] in _PROJECT_MODULES for m in sys.modules)
+    if (seen is None and loaded) or (seen is not None and seen != stamp):
+        for name in [m for m in sys.modules if m.split(".")[0] in _PROJECT_MODULES]:
+            del sys.modules[name]
+        st.cache_resource.clear()
+    sys._finresearch_stamp = stamp
+
+
+_reload_if_code_changed()
+
 from agents.auditor import (  # noqa: E402
     CONTRADICTED,
     UNCHECKABLE,
