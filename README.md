@@ -1,7 +1,9 @@
-﻿# Claim Auditor for Financial Text
+﻿# Multi-Agent Financial Research Assistant
 
-Paste what an analyst, a news site or a chatbot wrote about a listed company and see,
-**sentence by sentence, what the data actually supports**.
+Specialist agents gather facts about a listed company; a separate **Verification Agent**
+re-checks every claim against the source data before you see it. The same verifier can
+fact-check text written by anyone else: paste what an analyst, a news site or a chatbot
+wrote and see, **sentence by sentence, what the data actually supports**.
 
 Language models write confident financial prose and get numbers and directions wrong.
 This tool does not ask another model for an opinion. It re-checks each sentence against

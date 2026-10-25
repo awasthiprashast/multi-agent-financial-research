@@ -125,11 +125,14 @@ class AuditResult:
         if not self.checkable:
             return ("None of these sentences contains a number or price statement the data "
                     "can check, so nothing could be confirmed or disproved.")
-        wrong = c[CONTRADICTED] + c[UNSUPPORTED]
-        if wrong == 0:
+        if c[CONTRADICTED] == 0 and c[UNSUPPORTED] == 0:
             return f"All {self.checkable} checkable statements match the data."
-        return (f"{c[VERIFIED]} of {self.checkable} checkable statements match the data; "
-                f"{wrong} {'does' if wrong == 1 else 'do'} not.")
+        parts = [f"{c[VERIFIED]} of {self.checkable} checkable statements match the data"]
+        if c[CONTRADICTED]:
+            parts.append(f"{c[CONTRADICTED]} contradict it")
+        if c[UNSUPPORTED]:
+            parts.append(f"{c[UNSUPPORTED]} could not be confirmed")
+        return "; ".join(parts) + "."
 
     @property
     def corrected_text(self) -> str:
@@ -153,7 +156,7 @@ def normalise(text: str) -> str:
     """Make chatbot typography comparable: "20‑day" (non-breaking hyphen) must read as
     "20-day", and citation markers such as 【6】 or [3] are not numbers."""
     text = _CITE_MARKS.sub("", text)
-    text = text.replace(" ", " ").replace("’", "'").replace("‘", "'")
+    text = text.replace(" ", " ").replace(" ", " ").replace(" ", " ").replace("’", "'").replace("‘", "'")
     return _DASHES.sub("-", text)
 
 
@@ -232,7 +235,8 @@ def _explain(s: AuditedSentence, holds) -> None:
         s.explanation = " ".join(bits) or "Matches the data."
         return
     if s.status == UNSUPPORTED:
-        s.explanation = "Nothing in the data confirms or contradicts this."
+        s.explanation = (s.reason[:1].upper() + s.reason[1:] + "."
+                         if s.reason else "Nothing in the data confirms or contradicts this.")
         return
     s.explanation = " ".join(parts) or (s.reason[:1].upper() + s.reason[1:] + ".")
     # offer a rewrite only if the data confirms the rewritten sentence
@@ -366,8 +370,14 @@ def audit_text(text: str, pipeline, ticker: Optional[str] = None) -> AuditResult
                 checks.append(NumberCheck(raw=f.raw, matched=True))
 
         reason = verdict.reason
-        if verdict.unsupported_numbers or conflicts or reason.startswith("claim entity"):
+        has_comparator = any(not n.matched and n.actual for n in checks)
+        if conflicts or reason.startswith("claim entity") or has_comparator:
+            # the data holds a comparable value and it differs, or the direction is wrong
             status = CONTRADICTED
+        elif verdict.unsupported_numbers:
+            # the data holds nothing to compare this figure with: not proven wrong
+            status = UNSUPPORTED
+            reason = "no figure in the data to compare with: " + ", ".join(verdict.unsupported_numbers)
         elif (claim.numbers and verdict.numeric_support >= 1.0) or (confirmed and not conflicts):
             status, reason = VERIFIED, ""
         else:
