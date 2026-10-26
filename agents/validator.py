@@ -93,6 +93,11 @@ _SIGNED_UNITS = {"%", "percent", "per cent", "bps"}
 # "21.7% below its level" is a fall even though no minus sign is printed
 _DOWN_AFTER = re.compile(r"^\s*(?:(?:price|share|stock)\s+)?(?:below|under|beneath|lower|down|decline|"
                          r"drop|loss|fall|decrease)(?![a-z])", re.IGNORECASE)
+# a figure introduced as a bound rather than a value
+_LOWER_BOUND = re.compile(r"(?:exceed(?:s|ing)?|over|above|more than|greater than|at least|beyond)"
+                          r"\s+(?:about\s+|roughly\s+)?(?:₹|rs\.?|inr|\$)?\s*$", re.IGNORECASE)
+_UPPER_BOUND = re.compile(r"(?:under|below|less than|at most|no more than)"
+                          r"\s+(?:about\s+|roughly\s+)?(?:₹|rs\.?|inr|\$)?\s*$", re.IGNORECASE)
 # "around/about/near/roughly 62": a loose figure, matched to 2 %
 _APPROX = re.compile(r"(?:around|about|approx|approximately|roughly|nearly|near|circa|almost|~|≈)"
                      r"[^,;.0-9]{0,18}$", re.IGNORECASE)
@@ -206,7 +211,7 @@ _RSI_THRESHOLDS = (30.0, 70.0)
 
 _UP = r"(?:above|over|higher than|greater than|exceeds?|exceeding)"
 _DN = r"(?:below|under|lower than|less than)"
-_PRICE = r"(?:close|closing price|last close|price|stock|shares)"
+_PRICE = r"(?:close|closing price|last close|price(?![- ]?to)|stock|shares)"   # not "price-to-earnings"
 
 
 def _window_keys(tail: str, default: bool) -> List[str]:
@@ -556,7 +561,14 @@ class VerificationAgent:
             gap = abs(x - t)
             return gap / max(abs(t), 1e-9) <= rel_tol or gap <= half_step
 
+        # "exceeding 100x", "over 60 %", "below 5 %": a bound, satisfied by any value on that side
+        lead = claim_text[max(0, fact.start - 25):fact.start]
+        lower_bound = bool(_LOWER_BOUND.search(lead))
+        upper_bound = bool(_UPPER_BOUND.search(lead))
+
         def close(c: float) -> bool:
+            if (lower_bound and c >= target) or (upper_bound and 0 < c <= target):
+                return True
             return near(c, target) or (magnitude and near(abs(c), abs(target)))
 
         # recomputed from raw prices: always available, whatever retrieval returned.

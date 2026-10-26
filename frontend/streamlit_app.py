@@ -441,6 +441,61 @@ def evaluation_tab() -> None:
         a.metric("Exact match, 30 unseen queries", f"{router['exact_match'] * 100:.0f}%")
         b.metric("Specialists recalled", f"{router['label_recall'] * 100:.0f}%")
         c.metric("Agent calls saved", f"{router['agent_invocation_reduction_pct']:.0f}%")
+    real, held = load("real_text_benchmark.json"), load("real_text_benchmark_heldout.json")
+    if real and held:
+        pct = lambda x: "n/a" if x is None else f"{x * 100:.1f}%"      # noqa: E731
+        st.markdown("#### 4. Real chatbot text: the test that matters")
+        st.markdown(
+            f"**{real['sentences']} sentences** from 24 answers written by two real chatbots "
+            "(gpt-oss-120b and qwen3.8-27b) about 12 companies, in two settings: answering from "
+            "memory, and answering with the company's data supplied. Nobody planted any errors. "
+            "Each sentence was labelled correct, wrong or not settleable by reading it against a "
+            "frozen data sheet (`benchmark/label_sheet.md`); "
+            f"{real['ambiguous_excluded']} ambiguous ones are excluded. The data is frozen in "
+            "`benchmark/frozen/`, so the benchmark runs offline and never changes.")
+        a, b, c, d = st.columns(4)
+        a.metric("Wrong sentences caught", pct(held["errors_caught"]["recall"]))
+        b.metric("Accuracy when it commits", pct(held["accuracy_when_committed"]))
+        c.metric("Correct sentences wrongly rejected", pct(held["false_reject_rate"]))
+        d.metric("Wrong sentences passed as correct", pct(held["false_accept_rate"]))
+        st.caption(
+            f"Held-out result: {held['scored']} sentences about 5 companies (LT, Wipro, Bharti "
+            "Airtel, Hindustan Unilever, Adani Green) that were never looked at while building the "
+            f"checker. Code frozen at commit `{held['code_commit']}`, scored once.")
+        rows = {"": ["Wrong sentences caught", "Of its 'wrong' calls, truly wrong",
+                     "Correct sentences recognised", "Correct sentences wrongly rejected",
+                     "Wrong sentences passed as correct", "Checkable sentences it gave a verdict on",
+                     "Accuracy when it gives a verdict"]}
+        for label, r in (("Development: 7 companies (tuned on)", real["dev"]),
+                         ("Held-out: 5 companies (code frozen)", held),
+                         ("Held-out after fixing what it exposed*", real["test"])):
+            rows[label] = [pct(r["errors_caught"]["recall"]), pct(r["errors_caught"]["precision"]),
+                           pct(r["correct_recognised"]["recall"]), pct(r["false_reject_rate"]),
+                           pct(r["false_accept_rate"]), pct(r["coverage_of_checkable"]),
+                           pct(r["accuracy_when_committed"])]
+        st.table(rows)
+        st.caption("*The held-out set exposed several real bugs (\"price-to-earnings\" read as a share "
+                   "price, \"exceeding 100x\" read as a value, labels like D2C read as numbers, "
+                   "net debt confused with debt). They were fixed afterwards, so the last column is "
+                   "no longer held-out. The middle column is the honest one.")
+        n = real["naive_baseline"]
+        st.markdown(f"**Compared with a verifier that trusts any sentence containing a number:** "
+                    f"it catches {pct(n['errors_caught_recall'])} of wrong sentences and passes "
+                    f"{pct(n['false_accept_rate'])} of them as correct.")
+        st.markdown("**By kind of statement** (all 12 companies):")
+        kinds = real["by_kind"]
+        st.table({"Kind": list(kinds),
+                  "Sentences": [str(v["scored"]) for v in kinds.values()],
+                  "Wrong ones caught": [pct(v["errors_caught_recall"]) for v in kinds.values()],
+                  "Correct ones recognised": [pct(v["correct_recall"]) for v in kinds.values()]})
+        st.markdown("**What it gets wrong, in the benchmark itself:**")
+        for m in real["mistakes"]:
+            st.markdown(f"- Called **{'correct' if m['pred'] == 'C' else 'wrong'}**, labelled "
+                        f"**{'correct' if m['gold'] == 'C' else 'wrong'}**: “{m['text'][:230]}”")
+        st.caption("Passed as correct although wrong: a sentence calling a debt-to-equity of 8.6% "
+                   "\"high\" has a true number and a wrong interpretation, which the verifier does "
+                   "not judge. Reproduce: `python -m eval.benchmark_real`; the labels and the "
+                   "labelling rules are in `benchmark/labels.py`.")
     st.markdown("#### What it cannot do")
     st.markdown("- Judge **conclusions**: \"above its average, so the stock will fall\" has a true "
                 "premise and a wrong conclusion; the verifier checks the premise.\n"

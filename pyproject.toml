@@ -35,7 +35,7 @@ all = ["finresearch-assistant[neural,llm,api,ui]"]
 py-modules = ["core", "llm", "pipeline", "config", "sentiment_model", "logging_setup"]
 
 [tool.setuptools.packages.find]
-include = ["agents*", "rag*", "data*", "eval*", "api*"]
+include = ["agents*", "rag*", "data*", "eval*", "api*", "benchmark*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

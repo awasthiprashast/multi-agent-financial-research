@@ -67,7 +67,7 @@ _CLAUSE = re.compile(r",\s+|;\s+|\s+(?:while|but|whereas|though|although|yet|whi
 _OTHER_QTY = re.compile(
     r"(?<![a-z])(?:forward|forecasts?|estimat\w*|consensus|guidance|target|quarter\w*|ebitda|book|"
     r"dividend|yield|payout|npa|nim|net interest|cost-to-income|capital adequacy|roce|free cash|"
-    r"fcf|order book|attrition|beta|enterprise value|market share|median)(?![a-z])"
+    r"fcf|order book|attrition|beta|enterprise value|market share|median|net debt|net cash)(?![a-z])"
     r"|(?<![a-z])(?:peer|sector|industry|market|nifty[- ]?\d*|historical|five-year|5-year|10-year|"
     r"long-term)\s+(?:average|mean|median|multiple|p/e)"
     r"|(?<![a-z])q[1-4](?![0-9a-z])"
@@ -81,6 +81,11 @@ _ADVICE_FRAME = re.compile(
     r"(?:investors?|readers?|traders?|one)\s+(?:should|must|may want to)\s+(?:also\s+)?"
     r"(?:note|be\s+(?:aware|mindful|cautious|wary)|watch|monitor|keep in mind|remember)"
     r"(?:\s+(?:that|of|the))?\s*", re.I)
+
+
+_SHARE_OF = re.compile(r"^\s*(?:%\s*)?of\s+(?:its\s+|the\s+|their\s+|total\s+)*"
+                       r"(?:revenues?|sales|profits?|income|earnings|business)", re.I)
+_PERIOD_MENTION = re.compile(r"(?<![a-z])(?:fy|q[1-4])[- ]?(?:20)?(\d\d)e?(?![\d])", re.I)
 
 
 def _factual_clauses(sentence: str):
@@ -125,6 +130,13 @@ def _other_quantity(text: str, fact: NumericFact) -> bool:
         if m.group(1) == "26":                       # FY26: the year the data covers
             continue
         return True
+    # "accounts for 60% of its revenue": a share of a total, which the data does not hold
+    if _SHARE_OF.match(text[fact.end:fact.end + 30]):
+        return True
+    # a fiscal year or quarter named anywhere in the sentence sets the period of every figure in it
+    for m in _PERIOD_MENTION.finditer(text):
+        if m.group(1) != "26":
+            return True
     return False
 # "50-day", "14 days", "52-week": the length of a window, not a claim about the data
 _WINDOW_AFTER = re.compile(r"^[-\s]?(?:day|week|month|year|session|trading)s?\b", re.I)

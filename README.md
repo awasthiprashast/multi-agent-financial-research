@@ -219,6 +219,41 @@ Routing cuts agent invocations by about 60 %. The held-out figure is the honest
 one; the training queries were written by the same person who designed the
 features.
 
+### 5. Real chatbot text, against hand-assigned labels — `results/real_text_benchmark*.json`
+
+The benchmarks above plant their errors or use synthetic evidence. This one does neither.
+
+- **Data.** 339 sentences from 24 answers written by two real chatbots
+  (gpt-oss-120b, qwen3.8-27b) about the 12 curated companies, in two settings: answering from
+  memory (the model is given nothing) and answering with the company's data sheet supplied.
+  Nobody injected an error.
+- **Frozen evidence.** The data each answer is judged against is saved in `benchmark/frozen/`
+  (2026-10-27), so the benchmark is offline and the labels never go stale.
+- **Labels.** Each sentence is labelled correct / wrong / partly checkable / no verdict by reading
+  it against that company's data sheet (`benchmark/label_sheet.md`), under the rules in
+  `benchmark/labels.py`. 8 ambiguous sentences are excluded and counted.
+- **Development / test split.** The verifier was tuned only on 7 companies. Five others (LT, Wipro,
+  Bharti Airtel, Hindustan Unilever, Adani Green) were scored once, with the code frozen at commit
+  `1f193c2`.
+
+| | Wrong caught | Correct recognised | Correct wrongly rejected | Wrong passed as correct | Verdict given | Accuracy when it gives one |
+|---|---|---|---|---|---|---|
+| Development, 7 companies (tuned on) | 89.6 % | 96.2 % | 0.0 % | 4.2 % | 95.2 % | 98.3 % |
+| **Held-out, 5 companies (code frozen)** | 81.8 % | 86.9 % | 1.6 % | 3.0 % | 87.2 % | 97.6 % |
+| Held-out after fixing what it exposed* | 81.8 % | 88.5 % | 0.0 % | 3.0 % | 87.2 % | 98.8 % |
+
+\*The held-out set exposed several real bugs ("price-to-earnings" read as a share price, "exceeding
+100x" read as a value, labels such as "D2C" read as numbers, net debt confused with debt, a share of
+revenue compared with revenue growth). They were fixed afterwards, so that row is no longer
+held-out; the held-out row is the one to quote. A verifier that trusts any sentence containing a
+number catches 0.0 % of the wrong sentences and passes
+98.8 % of them as correct.
+
+What it still gets wrong, listed in the results file: sentences with a true number and a wrong
+interpretation ("a high debt-to-equity ratio of 8.6 %"), which the verifier does not judge, and a
+sentence calling a positive sentiment score negative. Reproduce:
+`python -m eval.benchmark_real` (all), `--split dev`, `--split test`.
+
 ---
 
 ## Architecture
@@ -257,10 +292,11 @@ python pipeline.py "Give me a full report on HDFC Bank"                  # CLI, 
 python pipeline.py "Complete analysis of TCS" --offline --llm            # LLM analysts
 streamlit run frontend/streamlit_app.py                                  # demo UI: audit a text + research report
 uvicorn api.main:app --reload                                            # REST API (/audit, /research, /verify)
-python -m pytest tests/ -q                                               # 107 tests, ~40 s
+python -m pytest tests/ -q                                               # 136 tests, ~60 s
 python -m eval.run_all --offline                                         # benchmark + ablation + router
 python -m eval.llm_eval --seed 7                                         # LLM claims evaluation
 python -m eval.sentiment_study all                                       # headlines -> FinBERT -> correlation
+python -m eval.benchmark_real                                            # real chatbot text vs labelled sentences
 ```
 
 LLM backend (for `--llm`): Groq if `GROQ_API_KEY` is set, else a local Ollama
@@ -316,9 +352,10 @@ data/
   universe.py           the curated 12 + run-time registry for any NSE/BSE company (single source of truth)
   corpus.py             snapshot corpus; live evidence (prices, statements, news)
   connectors/           yfinance, Google News, GDELT, RSS
+benchmark/              frozen company data, collected chatbot answers, gold labels
 eval/                   perturbation benchmark, ablation, LLM eval, sentiment study, router test set
 results/                every reported number
-tests/                  107 tests, ~80 % line coverage
+tests/                  136 tests, ~80 % line coverage
 ```
 
 ## Known limitations

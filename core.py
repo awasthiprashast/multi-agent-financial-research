@@ -116,6 +116,12 @@ def extract_numbers(text: str) -> List[NumericFact]:
         if m.group("sign") in ("-", "−") and not glued:
             val = -val
         unit = re.sub(r"\s+", " ", (m.group("unit") or "")).strip()
+        # Digits welded to letters are names, not quantities: "D2C", "5G", "Q2", "FY25".
+        a = m.start("num")
+        if m.group("cur") is None and a > 0 and text[a - 1].isalpha():
+            continue
+        if not unit and m.end("num") < len(text) and text[m.end("num")].isalpha():
+            continue
         # Skip bare years and list indices — they are not analytical quantities.
         if not unit and 1900 <= abs(val) <= 2100 and float(val).is_integer():
             continue

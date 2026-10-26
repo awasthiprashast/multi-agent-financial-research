@@ -1,0 +1,447 @@
+{
+ "split": "all",
+ "companies": [
+  "TCS.NS",
+  "RELIANCE.NS",
+  "INFY.NS",
+  "HDFCBANK.NS",
+  "ICICIBANK.NS",
+  "SBIN.NS",
+  "ITC.NS",
+  "LT.NS",
+  "WIPRO.NS",
+  "BHARTIARTL.NS",
+  "HINDUNILVR.NS",
+  "ADANIGREEN.NS"
+ ],
+ "sentences": 339,
+ "ambiguous_excluded": 8,
+ "scored": 331,
+ "gold": {
+  "correct": 139,
+  "wrong": 81,
+  "no_clean_verdict": 111
+ },
+ "confusion": {
+  "gold CORRECT -> auditor C": 129,
+  "gold CORRECT -> auditor U": 6,
+  "gold CORRECT -> auditor N": 4,
+  "gold WRONG -> auditor C": 3,
+  "gold WRONG -> auditor W": 70,
+  "gold WRONG -> auditor U": 4,
+  "gold WRONG -> auditor N": 4,
+  "gold PARTLY_CHECKABLE -> auditor U": 1,
+  "gold NO_VERDICT -> auditor W": 1,
+  "gold NO_VERDICT -> auditor U": 41,
+  "gold NO_VERDICT -> auditor N": 68
+ },
+ "errors_caught": {
+  "recall": 0.864,
+  "precision": 0.986
+ },
+ "false_accept_rate": 0.037,
+ "false_accepts": [
+  "INFY.NS|openai/gpt-oss-120b|grounded|4",
+  "ITC.NS|openai/gpt-oss-120b|grounded|5",
+  "WIPRO.NS|openai/gpt-oss-120b|grounded|5"
+ ],
+ "correct_recognised": {
+  "recall": 0.928,
+  "precision": 0.977
+ },
+ "false_reject_rate": 0.0,
+ "false_rejects": [],
+ "coverage_of_checkable": 0.918,
+ "accuracy_when_committed": 0.985,
+ "overreach_on_no_clean_verdict": 0.009,
+ "by_setting": {
+  "grounded": {
+   "scored": 169,
+   "gold": {
+    "correct": 136,
+    "wrong": 14,
+    "no_clean_verdict": 19
+   },
+   "errors_caught_recall": 0.714,
+   "false_accept_rate": 0.214,
+   "correct_recall": 0.934,
+   "false_reject_rate": 0.0
+  },
+  "ungrounded": {
+   "scored": 162,
+   "gold": {
+    "correct": 3,
+    "wrong": 67,
+    "no_clean_verdict": 92
+   },
+   "errors_caught_recall": 0.896,
+   "false_accept_rate": 0.0,
+   "correct_recall": 0.667,
+   "false_reject_rate": 0.0
+  }
+ },
+ "by_model": {
+  "openai/gpt-oss-120b": {
+   "scored": 144,
+   "gold": {
+    "correct": 54,
+    "wrong": 42,
+    "no_clean_verdict": 48
+   },
+   "errors_caught_recall": 0.81,
+   "false_accept_rate": 0.071,
+   "correct_recall": 0.87,
+   "false_reject_rate": 0.0
+  },
+  "qwen/qwen3.8-27b": {
+   "scored": 187,
+   "gold": {
+    "correct": 85,
+    "wrong": 39,
+    "no_clean_verdict": 63
+   },
+   "errors_caught_recall": 0.923,
+   "false_accept_rate": 0.0,
+   "correct_recall": 0.965,
+   "false_reject_rate": 0.0
+  }
+ },
+ "by_kind": {
+  "bollinger": {
+   "scored": 9,
+   "gold": {
+    "correct": 5,
+    "wrong": 2,
+    "no_clean_verdict": 2
+   },
+   "errors_caught_recall": 1.0,
+   "false_accept_rate": 0.0,
+   "correct_recall": 0.8,
+   "false_reject_rate": 0.0
+  },
+  "macd": {
+   "scored": 3,
+   "gold": {
+    "correct": 1,
+    "wrong": 2,
+    "no_clean_verdict": 0
+   },
+   "errors_caught_recall": 1.0,
+   "false_accept_rate": 0.0,
+   "correct_recall": 1.0,
+   "false_reject_rate": 0.0
+  },
+  "moving average": {
+   "scored": 52,
+   "gold": {
+    "correct": 33,
+    "wrong": 16,
+    "no_clean_verdict": 3
+   },
+   "errors_caught_recall": 0.75,
+   "false_accept_rate": 0.062,
+   "correct_recall": 0.97,
+   "false_reject_rate": 0.0
+  },
+  "other": {
+   "scored": 23,
+   "gold": {
+    "correct": 1,
+    "wrong": 0,
+    "no_clean_verdict": 22
+   },
+   "errors_caught_recall": null,
+   "false_accept_rate": null,
+   "correct_recall": 0.0,
+   "false_reject_rate": 0.0
+  },
+  "price level": {
+   "scored": 15,
+   "gold": {
+    "correct": 3,
+    "wrong": 6,
+    "no_clean_verdict": 6
+   },
+   "errors_caught_recall": 1.0,
+   "false_accept_rate": 0.0,
+   "correct_recall": 1.0,
+   "false_reject_rate": 0.0
+  },
+  "profitability and financials": {
+   "scored": 77,
+   "gold": {
+    "correct": 25,
+    "wrong": 15,
+    "no_clean_verdict": 37
+   },
+   "errors_caught_recall": 0.667,
+   "false_accept_rate": 0.067,
+   "correct_recall": 1.0,
+   "false_reject_rate": 0.0
+  },
+  "risk (volatility, drawdown, VaR)": {
+   "scored": 26,
+   "gold": {
+    "correct": 9,
+    "wrong": 4,
+    "no_clean_verdict": 13
+   },
+   "errors_caught_recall": 1.0,
+   "false_accept_rate": 0.0,
+   "correct_recall": 1.0,
+   "false_reject_rate": 0.0
+  },
+  "rsi": {
+   "scored": 53,
+   "gold": {
+    "correct": 24,
+    "wrong": 27,
+    "no_clean_verdict": 2
+   },
+   "errors_caught_recall": 0.963,
+   "false_accept_rate": 0.037,
+   "correct_recall": 0.833,
+   "false_reject_rate": 0.0
+  },
+  "sentiment": {
+   "scored": 16,
+   "gold": {
+    "correct": 16,
+    "wrong": 0,
+    "no_clean_verdict": 0
+   },
+   "errors_caught_recall": null,
+   "false_accept_rate": null,
+   "correct_recall": 1.0,
+   "false_reject_rate": 0.0
+  },
+  "valuation (P/E)": {
+   "scored": 57,
+   "gold": {
+    "correct": 22,
+    "wrong": 9,
+    "no_clean_verdict": 26
+   },
+   "errors_caught_recall": 0.889,
+   "false_accept_rate": 0.0,
+   "correct_recall": 0.864,
+   "false_reject_rate": 0.0
+  }
+ },
+ "naive_baseline": {
+  "errors_caught_recall": 0.0,
+  "false_accept_rate": 0.988,
+  "correct_recall": 0.986
+ },
+ "dev": {
+  "sentences": 197,
+  "ambiguous_excluded": 5,
+  "scored": 192,
+  "gold": {
+   "correct": 78,
+   "wrong": 48,
+   "no_clean_verdict": 66
+  },
+  "confusion": {
+   "gold CORRECT -> auditor C": 75,
+   "gold CORRECT -> auditor U": 1,
+   "gold CORRECT -> auditor N": 2,
+   "gold WRONG -> auditor C": 2,
+   "gold WRONG -> auditor W": 43,
+   "gold WRONG -> auditor U": 3,
+   "gold PARTLY_CHECKABLE -> auditor U": 1,
+   "gold NO_VERDICT -> auditor U": 25,
+   "gold NO_VERDICT -> auditor N": 40
+  },
+  "errors_caught": {
+   "recall": 0.896,
+   "precision": 1.0
+  },
+  "false_accept_rate": 0.042,
+  "false_accepts": [
+   "INFY.NS|openai/gpt-oss-120b|grounded|4",
+   "ITC.NS|openai/gpt-oss-120b|grounded|5"
+  ],
+  "correct_recognised": {
+   "recall": 0.962,
+   "precision": 0.974
+  },
+  "false_reject_rate": 0.0,
+  "false_rejects": [],
+  "coverage_of_checkable": 0.952,
+  "accuracy_when_committed": 0.983,
+  "overreach_on_no_clean_verdict": 0.0
+ },
+ "test": {
+  "sentences": 142,
+  "ambiguous_excluded": 3,
+  "scored": 139,
+  "gold": {
+   "correct": 61,
+   "wrong": 33,
+   "no_clean_verdict": 45
+  },
+  "confusion": {
+   "gold CORRECT -> auditor C": 54,
+   "gold CORRECT -> auditor U": 5,
+   "gold CORRECT -> auditor N": 2,
+   "gold WRONG -> auditor C": 1,
+   "gold WRONG -> auditor W": 27,
+   "gold WRONG -> auditor U": 1,
+   "gold WRONG -> auditor N": 4,
+   "gold NO_VERDICT -> auditor W": 1,
+   "gold NO_VERDICT -> auditor U": 16,
+   "gold NO_VERDICT -> auditor N": 28
+  },
+  "errors_caught": {
+   "recall": 0.818,
+   "precision": 0.964
+  },
+  "false_accept_rate": 0.03,
+  "false_accepts": [
+   "WIPRO.NS|openai/gpt-oss-120b|grounded|5"
+  ],
+  "correct_recognised": {
+   "recall": 0.885,
+   "precision": 0.982
+  },
+  "false_reject_rate": 0.0,
+  "false_rejects": [],
+  "coverage_of_checkable": 0.872,
+  "accuracy_when_committed": 0.988,
+  "overreach_on_no_clean_verdict": 0.022
+ },
+ "mistakes": [
+  {
+   "id": "INFY.NS|openai/gpt-oss-120b|grounded|4",
+   "gold": "W",
+   "pred": "C",
+   "text": "However, the balance sheet shows a high debt-to-equity ratio of 8.6%, and the stock has logged a steep 40% drawdown historically, with a recent 21.7% decline over the past 246 sessions and a 1-day VaR95 of -3.39%.",
+   "reason": "8.6% matches the data. 40% matches the data. 21.7% matches the data. 246 matches the data. -3.39% matches the data."
+  },
+  {
+   "id": "ITC.NS|openai/gpt-oss-120b|grounded|5",
+   "gold": "W",
+   "pred": "C",
+   "text": "The balance sheet is clean, with a debt-to-equity of just 0.03, far below the headline 3.3% figure that likely includes off-balance items, so financial risk is limited.",
+   "reason": "0.03 matches the data. 3.3% matches the data."
+  },
+  {
+   "id": "WIPRO.NS|openai/gpt-oss-120b|grounded|5",
+   "gold": "W",
+   "pred": "C",
+   "text": "Risks include the high annualised volatility (26.4%) and a historic max drawdown of 40.3%, which could be exacerbated by the current overbought condition and a modest negative news sentiment (net score 0.07).",
+   "reason": "26.4% matches the data. 40.3% matches the data."
+  }
+ ],
+ "missed_by_abstaining": [
+  {
+   "id": "HDFCBANK.NS|openai/gpt-oss-120b|ungrounded|3",
+   "gold": "W",
+   "pred": "U",
+   "text": "Valuation remains premium relative to peers, with a forward P/E of roughly 18× versus the Indian banking sector average of 14×, but this is justified by the bank's robust earnings growth of 18 % YoY in Q3 FY24 and a high return on equity of 18.5 %."
+  },
+  {
+   "id": "SBIN.NS|openai/gpt-oss-120b|ungrounded|4",
+   "gold": "W",
+   "pred": "U",
+   "text": "Profitability remains robust, with Q3 FY24 net profit rising 14% YoY to ₹31.2 billion and the return on equity holding steady at 13.5%, while the cost-to-income ratio has improved to 38.2% from 40.1% a year earlier."
+  },
+  {
+   "id": "WIPRO.NS|openai/gpt-oss-120b|ungrounded|6",
+   "gold": "W",
+   "pred": "N",
+   "text": "Key risks include the slowdown in global IT spending, heightened competition from larger peers, and potential currency headwinds as a sizable portion of revenue is earned in USD; any further deterioration in macro-economic sentiment could pressure margins and push the stock back toward its lower support level near ₹580."
+  },
+  {
+   "id": "BHARTIARTL.NS|qwen/qwen3.8-27b|ungrounded|4",
+   "gold": "W",
+   "pred": "U",
+   "text": "Profitability remains robust, with an EBITDA margin expanding to roughly 48% and a net profit margin exceeding 20%, reflecting efficient cost management and higher average revenue per user."
+  },
+  {
+   "id": "BHARTIARTL.NS|qwen/qwen3.8-27b|ungrounded|8",
+   "gold": "W",
+   "pred": "N",
+   "text": "Retail investors might consider waiting for a pullback to the 200-day moving average near ₹1,150 for a better risk-reward profile."
+  },
+  {
+   "id": "HINDUNILVR.NS|openai/gpt-oss-120b|ungrounded|6",
+   "gold": "W",
+   "pred": "N",
+   "text": "A near-term catalyst could be the upcoming quarterly earnings release; a beat on earnings and guidance would likely push the stock above the ₹2,720 resistance, while a miss could see it retest the 50-day moving average support around ₹2,650."
+  },
+  {
+   "id": "HINDUNILVR.NS|qwen/qwen3.8-27b|ungrounded|6",
+   "gold": "W",
+   "pred": "N",
+   "text": "Additionally, the company's high debt-to-equity ratio, though manageable, could pressure margins if interest rates remain elevated or if raw material costs for commodities like palm oil spike unexpectedly."
+  },
+  {
+   "id": "ADANIGREEN.NS|qwen/qwen3.8-27b|ungrounded|5",
+   "gold": "C",
+   "pred": "N",
+   "text": "However, investors must weigh these gains against significant risks, including high leverage and the capital-intensive nature of scaling renewable capacity."
+  },
+  {
+   "id": "ICICIBANK.NS|openai/gpt-oss-120b|grounded|5",
+   "gold": "W",
+   "pred": "U",
+   "text": "The market caps the bank at roughly ₹1 lakh cr, and its annualised volatility of 19.9% is moderate for the sector, though a 1-day VaR95 of -2.07% signals that downside moves can be swift."
+  },
+  {
+   "id": "ICICIBANK.NS|openai/gpt-oss-120b|grounded|6",
+   "gold": "C",
+   "pred": "N",
+   "text": "Risks include the near-overbought technical stance, the possibility of a correction if the price breaches the Bollinger upper band, and macro-economic headwinds that could widen the historical max drawdown of 16.1% or pressure the bank's net interest margins."
+  },
+  {
+   "id": "ITC.NS|openai/gpt-oss-120b|grounded|3",
+   "gold": "C",
+   "pred": "U",
+   "text": "Valuation is relatively modest, with a trailing P/E of 16.4, but the market has priced in a steep 35.7% loss over the past 246 sessions, and the annualised volatility of 22.4% translates into a 1-day VaR95 of roughly 2.2%, highlighting downside risk."
+  },
+  {
+   "id": "ITC.NS|openai/gpt-oss-120b|grounded|6",
+   "gold": "C",
+   "pred": "N",
+   "text": "However, the sharp price drop, a max drawdown of 36.6% and a largely neutral news sentiment (net score 0.03) suggest limited upside catalysts at present, and any further weakness in consumer demand or regulatory pressure could keep the stock near its lower Bollinger band."
+  },
+  {
+   "id": "LT.NS|openai/gpt-oss-120b|grounded|2",
+   "gold": "C",
+   "pred": "U",
+   "text": "The RSI of 45.7 is neutral, while the MACD remains slightly bullish (histogram +4) as the MACD line sits above its signal, and the price is still inside a relatively wide Bollinger band range (₹3,554-₹3,851), indicating room for movement but no clear breakout."
+  },
+  {
+   "id": "LT.NS|qwen/qwen3.8-27b|grounded|3",
+   "gold": "C",
+   "pred": "U",
+   "text": "Technical indicators remain mixed, as the RSI at 45.7 points to neutral momentum, while the price remains contained within the Bollinger Bands, signaling continued volatility rather than a clear breakout."
+  },
+  {
+   "id": "WIPRO.NS|openai/gpt-oss-120b|grounded|2",
+   "gold": "C",
+   "pred": "U",
+   "text": "The RSI of 83.7 signals that the stock is overbought, while a strong MACD histogram (+3.62) and a MACD line well above its signal (4.94 vs 1.32) confirm recent upward thrust, though the price is approaching the Bollinger upper band (₹191.78) and may face resistance."
+  },
+  {
+   "id": "WIPRO.NS|openai/gpt-oss-120b|grounded|3",
+   "gold": "C",
+   "pred": "U",
+   "text": "Valuation remains modest, with a trailing P/E of 14.9 versus the market average, and the company delivers solid profitability - a 13.6% profit margin, 16.1% operating margin and a 14.9% ROE, supported by a low debt-to-equity of 0.23."
+  },
+  {
+   "id": "BHARTIARTL.NS|openai/gpt-oss-120b|grounded|3",
+   "gold": "C",
+   "pred": "U",
+   "text": "Valuation is stretched: the trailing P/E of 40.1 far exceeds the market average and the company's 22 % revenue growth, while the profit margin of 13.1 % and net margin of 12.7 % are respectable but not enough to justify such a premium."
+  },
+  {
+   "id": "ADANIGREEN.NS|qwen/qwen3.8-27b|grounded|7",
+   "gold": "C",
+   "pred": "N",
+   "text": "Sentiment remains largely neutral with a slight positive skew, but this does not offset the technical weakness and high valuation risks."
+  }
+ ]
+}
