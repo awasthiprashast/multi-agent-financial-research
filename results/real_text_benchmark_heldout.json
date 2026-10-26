@@ -1,0 +1,321 @@
+{
+ "note": "Held-out result: 5 companies (LT, Wipro, Bharti Airtel, Hindustan Unilever, Adani Green) scored once, with the code frozen at commit 1f193c2, before any look at these companies' errors. Reproduce: git checkout 1f193c2 && python -m eval.benchmark_real --split test",
+ "code_commit": "1f193c2",
+ "split": "test",
+ "companies": [
+  "LT.NS",
+  "WIPRO.NS",
+  "BHARTIARTL.NS",
+  "HINDUNILVR.NS",
+  "ADANIGREEN.NS"
+ ],
+ "sentences": 142,
+ "ambiguous_excluded": 3,
+ "scored": 139,
+ "gold": {
+  "correct": 61,
+  "wrong": 33,
+  "no_clean_verdict": 45
+ },
+ "confusion": {
+  "gold CORRECT -> auditor C": 53,
+  "gold CORRECT -> auditor W": 1,
+  "gold CORRECT -> auditor U": 5,
+  "gold CORRECT -> auditor N": 2,
+  "gold WRONG -> auditor C": 1,
+  "gold WRONG -> auditor W": 27,
+  "gold WRONG -> auditor U": 1,
+  "gold WRONG -> auditor N": 4,
+  "gold NO_VERDICT -> auditor W": 7,
+  "gold NO_VERDICT -> auditor U": 12,
+  "gold NO_VERDICT -> auditor N": 26
+ },
+ "errors_caught": {
+  "recall": 0.818,
+  "precision": 0.771
+ },
+ "false_accept_rate": 0.03,
+ "false_accepts": [
+  "WIPRO.NS|openai/gpt-oss-120b|grounded|5"
+ ],
+ "correct_recognised": {
+  "recall": 0.869,
+  "precision": 0.981
+ },
+ "false_reject_rate": 0.016,
+ "false_rejects": [
+  "ADANIGREEN.NS|qwen/qwen3.8-27b|ungrounded|3"
+ ],
+ "coverage_of_checkable": 0.872,
+ "accuracy_when_committed": 0.976,
+ "overreach_on_no_clean_verdict": 0.156,
+ "by_setting": {
+  "grounded": {
+   "scored": 70,
+   "gold": {
+    "correct": 58,
+    "wrong": 4,
+    "no_clean_verdict": 8
+   },
+   "errors_caught_recall": 0.75,
+   "false_accept_rate": 0.25,
+   "correct_recall": 0.897,
+   "false_reject_rate": 0.0
+  },
+  "ungrounded": {
+   "scored": 69,
+   "gold": {
+    "correct": 3,
+    "wrong": 29,
+    "no_clean_verdict": 37
+   },
+   "errors_caught_recall": 0.828,
+   "false_accept_rate": 0.0,
+   "correct_recall": 0.333,
+   "false_reject_rate": 0.333
+  }
+ },
+ "by_model": {
+  "openai/gpt-oss-120b": {
+   "scored": 61,
+   "gold": {
+    "correct": 24,
+    "wrong": 16,
+    "no_clean_verdict": 21
+   },
+   "errors_caught_recall": 0.812,
+   "false_accept_rate": 0.062,
+   "correct_recall": 0.833,
+   "false_reject_rate": 0.0
+  },
+  "qwen/qwen3.8-27b": {
+   "scored": 78,
+   "gold": {
+    "correct": 37,
+    "wrong": 17,
+    "no_clean_verdict": 24
+   },
+   "errors_caught_recall": 0.824,
+   "false_accept_rate": 0.0,
+   "correct_recall": 0.892,
+   "false_reject_rate": 0.027
+  }
+ },
+ "by_kind": {
+  "bollinger": {
+   "scored": 3,
+   "gold": {
+    "correct": 1,
+    "wrong": 1,
+    "no_clean_verdict": 1
+   },
+   "errors_caught_recall": 1.0,
+   "false_accept_rate": 0.0,
+   "correct_recall": 1.0,
+   "false_reject_rate": 0.0
+  },
+  "macd": {
+   "scored": 2,
+   "gold": {
+    "correct": 1,
+    "wrong": 1,
+    "no_clean_verdict": 0
+   },
+   "errors_caught_recall": 1.0,
+   "false_accept_rate": 0.0,
+   "correct_recall": 1.0,
+   "false_reject_rate": 0.0
+  },
+  "moving average": {
+   "scored": 21,
+   "gold": {
+    "correct": 13,
+    "wrong": 7,
+    "no_clean_verdict": 1
+   },
+   "errors_caught_recall": 0.714,
+   "false_accept_rate": 0.0,
+   "correct_recall": 1.0,
+   "false_reject_rate": 0.0
+  },
+  "other": {
+   "scored": 8,
+   "gold": {
+    "correct": 1,
+    "wrong": 0,
+    "no_clean_verdict": 7
+   },
+   "errors_caught_recall": null,
+   "false_accept_rate": null,
+   "correct_recall": 0.0,
+   "false_reject_rate": 0.0
+  },
+  "price level": {
+   "scored": 7,
+   "gold": {
+    "correct": 1,
+    "wrong": 4,
+    "no_clean_verdict": 2
+   },
+   "errors_caught_recall": 1.0,
+   "false_accept_rate": 0.0,
+   "correct_recall": 1.0,
+   "false_reject_rate": 0.0
+  },
+  "profitability and financials": {
+   "scored": 33,
+   "gold": {
+    "correct": 12,
+    "wrong": 6,
+    "no_clean_verdict": 15
+   },
+   "errors_caught_recall": 0.5,
+   "false_accept_rate": 0.0,
+   "correct_recall": 1.0,
+   "false_reject_rate": 0.0
+  },
+  "risk (volatility, drawdown, VaR)": {
+   "scored": 7,
+   "gold": {
+    "correct": 3,
+    "wrong": 1,
+    "no_clean_verdict": 3
+   },
+   "errors_caught_recall": 1.0,
+   "false_accept_rate": 0.0,
+   "correct_recall": 1.0,
+   "false_reject_rate": 0.0
+  },
+  "rsi": {
+   "scored": 22,
+   "gold": {
+    "correct": 10,
+    "wrong": 11,
+    "no_clean_verdict": 1
+   },
+   "errors_caught_recall": 0.909,
+   "false_accept_rate": 0.091,
+   "correct_recall": 0.7,
+   "false_reject_rate": 0.0
+  },
+  "sentiment": {
+   "scored": 6,
+   "gold": {
+    "correct": 6,
+    "wrong": 0,
+    "no_clean_verdict": 0
+   },
+   "errors_caught_recall": null,
+   "false_accept_rate": null,
+   "correct_recall": 1.0,
+   "false_reject_rate": 0.0
+  },
+  "valuation (P/E)": {
+   "scored": 30,
+   "gold": {
+    "correct": 13,
+    "wrong": 2,
+    "no_clean_verdict": 15
+   },
+   "errors_caught_recall": 1.0,
+   "false_accept_rate": 0.0,
+   "correct_recall": 0.692,
+   "false_reject_rate": 0.077
+  }
+ },
+ "naive_baseline": {
+  "errors_caught_recall": 0.0,
+  "false_accept_rate": 0.97,
+  "correct_recall": 0.967
+ },
+ "mistakes": [
+  {
+   "id": "ADANIGREEN.NS|qwen/qwen3.8-27b|ungrounded|3",
+   "gold": "C",
+   "pred": "W",
+   "text": "Valuation remains stretched, with a Price-to-Earnings ratio exceeding 100x, which is significantly higher than the renewable energy sector average, pricing in substantial future growth expectations.",
+   "reason": "The data says 113.6, not 100x. Wrong: the last close (₹1,185.10) is below the 20-day average (₹1,276.65). Wrong: the last close (₹1,185.10) is below the 50-day average (₹1,290.84)."
+  },
+  {
+   "id": "WIPRO.NS|openai/gpt-oss-120b|grounded|5",
+   "gold": "W",
+   "pred": "C",
+   "text": "Risks include the high annualised volatility (26.4%) and a historic max drawdown of 40.3%, which could be exacerbated by the current overbought condition and a modest negative news sentiment (net score 0.07).",
+   "reason": "26.4% matches the data. 40.3% matches the data."
+  }
+ ],
+ "missed_by_abstaining": [
+  {
+   "id": "WIPRO.NS|openai/gpt-oss-120b|ungrounded|6",
+   "gold": "W",
+   "pred": "N",
+   "text": "Key risks include the slowdown in global IT spending, heightened competition from larger peers, and potential currency headwinds as a sizable portion of revenue is earned in USD; any further deterioration in macro-economic sentiment could pressure margins and push the stock back toward its lower support level near ₹580."
+  },
+  {
+   "id": "BHARTIARTL.NS|qwen/qwen3.8-27b|ungrounded|4",
+   "gold": "W",
+   "pred": "U",
+   "text": "Profitability remains robust, with an EBITDA margin expanding to roughly 48% and a net profit margin exceeding 20%, reflecting efficient cost management and higher average revenue per user."
+  },
+  {
+   "id": "BHARTIARTL.NS|qwen/qwen3.8-27b|ungrounded|8",
+   "gold": "W",
+   "pred": "N",
+   "text": "Retail investors might consider waiting for a pullback to the 200-day moving average near ₹1,150 for a better risk-reward profile."
+  },
+  {
+   "id": "HINDUNILVR.NS|openai/gpt-oss-120b|ungrounded|6",
+   "gold": "W",
+   "pred": "N",
+   "text": "A near-term catalyst could be the upcoming quarterly earnings release; a beat on earnings and guidance would likely push the stock above the ₹2,720 resistance, while a miss could see it retest the 50-day moving average support around ₹2,650."
+  },
+  {
+   "id": "HINDUNILVR.NS|qwen/qwen3.8-27b|ungrounded|6",
+   "gold": "W",
+   "pred": "N",
+   "text": "Additionally, the company's high debt-to-equity ratio, though manageable, could pressure margins if interest rates remain elevated or if raw material costs for commodities like palm oil spike unexpectedly."
+  },
+  {
+   "id": "ADANIGREEN.NS|qwen/qwen3.8-27b|ungrounded|5",
+   "gold": "C",
+   "pred": "N",
+   "text": "However, investors must weigh these gains against significant risks, including high leverage and the capital-intensive nature of scaling renewable capacity."
+  },
+  {
+   "id": "LT.NS|openai/gpt-oss-120b|grounded|2",
+   "gold": "C",
+   "pred": "U",
+   "text": "The RSI of 45.7 is neutral, while the MACD remains slightly bullish (histogram +4) as the MACD line sits above its signal, and the price is still inside a relatively wide Bollinger band range (₹3,554-₹3,851), indicating room for movement but no clear breakout."
+  },
+  {
+   "id": "LT.NS|qwen/qwen3.8-27b|grounded|3",
+   "gold": "C",
+   "pred": "U",
+   "text": "Technical indicators remain mixed, as the RSI at 45.7 points to neutral momentum, while the price remains contained within the Bollinger Bands, signaling continued volatility rather than a clear breakout."
+  },
+  {
+   "id": "WIPRO.NS|openai/gpt-oss-120b|grounded|2",
+   "gold": "C",
+   "pred": "U",
+   "text": "The RSI of 83.7 signals that the stock is overbought, while a strong MACD histogram (+3.62) and a MACD line well above its signal (4.94 vs 1.32) confirm recent upward thrust, though the price is approaching the Bollinger upper band (₹191.78) and may face resistance."
+  },
+  {
+   "id": "WIPRO.NS|openai/gpt-oss-120b|grounded|3",
+   "gold": "C",
+   "pred": "U",
+   "text": "Valuation remains modest, with a trailing P/E of 14.9 versus the market average, and the company delivers solid profitability - a 13.6% profit margin, 16.1% operating margin and a 14.9% ROE, supported by a low debt-to-equity of 0.23."
+  },
+  {
+   "id": "BHARTIARTL.NS|openai/gpt-oss-120b|grounded|3",
+   "gold": "C",
+   "pred": "U",
+   "text": "Valuation is stretched: the trailing P/E of 40.1 far exceeds the market average and the company's 22 % revenue growth, while the profit margin of 13.1 % and net margin of 12.7 % are respectable but not enough to justify such a premium."
+  },
+  {
+   "id": "ADANIGREEN.NS|qwen/qwen3.8-27b|grounded|7",
+   "gold": "C",
+   "pred": "N",
+   "text": "Sentiment remains largely neutral with a slight positive skew, but this does not offset the technical weakness and high valuation risks."
+  }
+ ]
+}
