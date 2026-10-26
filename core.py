@@ -49,16 +49,18 @@ class Chunk:
 NUM_RE = re.compile(
     r"(?P<sign>[-+−]?)\s*(?P<cur>₹|Rs\.?|\$)?\s*"
     r"(?P<num>\d{1,3}(?:,\d{2,3})+(?:\.\d+)?|(?<![\d.,])\d+(?:\.\d+)?(?!\d|,\d))\s*"
-    r"(?P<unit>%|percent|per cent|bps|x|cr|crore|lakh|bn|billion|mn|million)?",
+    r"(?P<unit>%|percent|per cent|bps|x|×|lakh\s+crore|lakh\s+cr|trillion|cr|crore|lakh|bn|billion|"
+    r"mn|million)?",
     re.IGNORECASE,
 )
 
 _ISO_DATE = re.compile(r"\b\d{4}-\d{2}-\d{2}\b")
 
 _SCALE = {
-    "": 1.0, "%": 1.0, "percent": 1.0, "per cent": 1.0, "x": 1.0,
+    "": 1.0, "%": 1.0, "percent": 1.0, "per cent": 1.0, "x": 1.0, "×": 1.0,
     "bps": 0.01,
     "lakh": 1e5, "cr": 1e7, "crore": 1e7,
+    "lakh crore": 1e12, "lakh cr": 1e12, "trillion": 1e12,
     "mn": 1e6, "million": 1e6, "bn": 1e9, "billion": 1e9,
 }
 
@@ -74,7 +76,17 @@ class NumericFact:
 
     @property
     def normalised(self) -> float:
-        return self.value * _SCALE.get(self.unit.lower(), 1.0)
+        return self.value * self.scale
+
+    @property
+    def scale(self) -> float:
+        return _SCALE.get(re.sub(r"\s+", " ", self.unit.lower()), 1.0)
+
+    @property
+    def decimals(self) -> int:
+        """Digits after the decimal point as written: "18%" -> 0, "24.3%" -> 1."""
+        m = re.search(r"\d\.(\d+)", self.raw)
+        return len(m.group(1)) if m else 0
 
 
 def extract_numbers(text: str) -> List[NumericFact]:
@@ -97,11 +109,15 @@ def extract_numbers(text: str) -> List[NumericFact]:
             val = float(raw_num.replace(",", ""))
         except ValueError:
             continue
-        if m.group("sign") in ("-", "−"):
+        # A hyphen glued to the previous word or digit is a range or a label, not a minus:
+        # "14-15%", "FY-2027", "year-on-year". A minus is a sign only after a space or bracket.
+        sign_at = m.start("sign")
+        glued = m.group("sign") == "-" and sign_at > 0 and text[sign_at - 1].isalnum()
+        if m.group("sign") in ("-", "−") and not glued:
             val = -val
-        unit = (m.group("unit") or "").strip()
+        unit = re.sub(r"\s+", " ", (m.group("unit") or "")).strip()
         # Skip bare years and list indices — they are not analytical quantities.
-        if not unit and 1900 <= val <= 2100 and float(val).is_integer():
+        if not unit and 1900 <= abs(val) <= 2100 and float(val).is_integer():
             continue
         facts.append(NumericFact(raw=m.group(0).strip(), value=val, unit=unit,
                                  start=m.start("num"), end=m.end()))

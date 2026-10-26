@@ -113,3 +113,77 @@ def test_a_partly_checkable_sentence_is_never_fully_correct(pipe):
     assert "only part" in r.sentences[0].reason
     plain = audit_text(f"TCS MACD line is {word} its signal line.", pipe, ticker="TCS.NS")
     assert plain.sentences[0].status == VERIFIED
+
+
+def test_us_is_not_a_sentence_end():
+    parts = split_sentences("Risks include a slowdown in U.S. IT spending. Margins are 24.3%.")
+    assert parts == ["Risks include a slowdown in U.S. IT spending.", "Margins are 24.3%."]
+
+
+# --- found by the real-text benchmark (development companies only) ---------------------------
+@pytest.fixture(scope="module")
+def fpipe():
+    """Real TCS data frozen on 2026-10-27 (ROE 45.6 %, profit margin 18.2 %, P/E 17.8,
+    market cap 917,185 cr, volatility 30.1 %)."""
+    from benchmark.frozen import FrozenPipeline
+    return FrozenPipeline()
+
+
+def _status(pipe, text):
+    return audit_text(text, pipe, ticker="TCS.NS").sentences[0]
+
+
+def test_a_rounded_or_approximate_figure_is_not_a_wrong_one(fpipe):
+    # TCS: ROE 45.6 %, profit margin 18.2 %, trailing P/E 17.8
+    assert _status(fpipe, "ROE sits around 45% and net margins are 18%.").status == VERIFIED
+    assert _status(fpipe, "ROE sits around 40% and net margins are 18%.").status == CONTRADICTED
+
+
+def test_lakh_crore_and_trillion_are_real_units(fpipe):
+    from core import extract_numbers
+    (n,) = extract_numbers("a market cap of roughly ₹9.2 lakh crore")
+    assert n.unit == "lakh crore" and n.normalised == 9.2e12
+    assert _status(fpipe, "The market cap is roughly ₹9.2 lakh crore.").status == VERIFIED
+    assert _status(fpipe, "The market cap is roughly ₹92 lakh crore.").status == CONTRADICTED
+
+
+def test_a_hyphen_between_digits_is_a_range_not_a_minus():
+    from core import extract_numbers
+    assert [n.value for n in extract_numbers("ROE of 14-15% in FY-2027")] == [14.0, 15.0]
+    assert [n.value for n in extract_numbers("a movement of -70 bps")] == [-70.0]
+
+
+def test_the_letters_rsi_inside_another_word_are_not_the_rsi(pipe):
+    s = _status(pipe, "The stock is in a persistent downtrend over the last 246 sessions.")
+    assert not s.directions_contradicted
+
+
+def test_nearing_overbought_is_not_a_claim_that_the_rsi_is_overbought(pipe):
+    ind = pipe._prepare("TCS.NS")["indicators"]
+    s = _status(pipe, "The RSI is nearing overbought territory.")
+    assert not s.directions_contradicted              # whatever the RSI is, nothing was asserted
+    assert ind["rsi_14"] > 0
+
+
+def test_a_hedge_does_not_hide_the_facts_beside_it(fpipe):
+    s = _status(fpipe, "Annualised volatility of 30.1% could rise further if markets sell off.")
+    assert s.status == VERIFIED and "30.1%" in s.explanation
+
+
+def test_forward_quarterly_and_peer_figures_are_not_compared_with_annual_ones(pipe):
+    s = _status(pipe, "TCS trades at a forward P/E of roughly 28x against a sector average of 24x.")
+    assert s.status != CONTRADICTED and s.status != VERIFIED
+    q = _status(pipe, "Net profit for the latest quarter was ₹18,500 crore.")
+    assert q.status != CONTRADICTED
+
+
+def test_a_stated_price_level_is_checked_against_the_last_close(pipe):
+    ind = pipe._prepare("TCS.NS")["indicators"]
+    assert _status(pipe, "TCS has recently consolidated near ₹3,800.").status == CONTRADICTED
+    near = round(ind["last_close"])
+    assert _status(pipe, f"TCS has recently consolidated near ₹{near:,}.").status == VERIFIED
+
+
+def test_a_condition_is_not_a_claim_about_today(pipe):
+    s = _status(pipe, "TCS needs caution until the price stabilises above its 50-day average.")
+    assert not s.directions_contradicted

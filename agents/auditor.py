@@ -40,7 +40,8 @@ MAX_SENTENCES = 60
 VERIFIED, CONTRADICTED, UNSUPPORTED, UNCHECKABLE = (
     "verified", "contradicted", "unsupported", "uncheckable")
 
-_ABBREV = ("Rs.", "Ltd.", "Inc.", "vs.", "approx.", "Cr.", "Co.", "Corp.", "No.", "e.g.", "i.e.")
+_ABBREV = ("Rs.", "Ltd.", "Inc.", "vs.", "approx.", "Cr.", "Co.", "Corp.", "No.", "e.g.", "i.e.",
+           "U.S.", "U.K.", "Mr.", "Ms.", "Dr.", "St.", "Pvt.", "est.", "Est.", "Fig.", "Q&A")
 _BULLET = re.compile(r"^\s*(?:[-*•–]|\d{1,2}[.)])\s+")
 _BOUNDARY = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9₹\"“(\[])")
 
@@ -56,6 +57,75 @@ _PERIOD_BEFORE = re.compile(
     r"\bApr(?:il)?\s|\bMay\s|\bJun(?:e)?\s|\bJul(?:y)?\s|\bAug(?:ust)?\s|\bSep(?:t(?:ember)?)?\s|"
     r"\bOct(?:ober)?\s|\bNov(?:ember)?\s|\bDec(?:ember)?\s)['’]?$", re.I)
 _PERIOD_AFTER = re.compile(r"^\s*(?:st|nd|rd|th)\b", re.I)
+
+# Clause boundaries: a comma or semicolon, or a linking word that starts a new thought.
+_CLAUSE = re.compile(r",\s+|;\s+|\s+(?:while|but|whereas|though|although|yet|which|so that|as well as)\s+",
+                     re.I)
+
+# A figure whose quantity the data does not hold: forward or estimated numbers, a quarter or
+# other fiscal year, peer / sector / historical averages, and ratios the sheet has no source for.
+_OTHER_QTY = re.compile(
+    r"(?<![a-z])(?:forward|forecasts?|estimat\w*|consensus|guidance|target|quarter\w*|ebitda|book|"
+    r"dividend|yield|payout|npa|nim|net interest|cost-to-income|capital adequacy|roce|free cash|"
+    r"fcf|order book|attrition|beta|enterprise value|market share|median)(?![a-z])"
+    r"|(?<![a-z])(?:peer|sector|industry|market|nifty[- ]?\d*|historical|five-year|5-year|10-year|"
+    r"long-term)\s+(?:average|mean|median|multiple|p/e)"
+    r"|(?<![a-z])q[1-4](?![0-9a-z])"
+    r"|(?<![a-z])(?:fy|q[1-4])[- ]?(?:20)?(\d\d)e?(?![\d])", re.I)
+
+
+_MODAL = re.compile(r"(?<![a-z])(?:will|would|could|may|might|should|likely|expected to)(?![a-z])", re.I)
+
+# "Investors should note that ..." introduces a fact; it is not an opinion about it.
+_ADVICE_FRAME = re.compile(
+    r"(?:investors?|readers?|traders?|one)\s+(?:should|must|may want to)\s+(?:also\s+)?"
+    r"(?:note|be\s+(?:aware|mindful|cautious|wary)|watch|monitor|keep in mind|remember)"
+    r"(?:\s+(?:that|of|the))?\s*", re.I)
+
+
+def _factual_clauses(sentence: str):
+    """(the sentence without its forecast/opinion clauses, whether any was removed)."""
+    sentence = _ADVICE_FRAME.sub("", sentence)
+    parts = [p for p in _CLAUSE.split(sentence) if p and p.strip()]
+    kept, removed = [], False
+    for p in parts:
+        if not _OPINION.search(p):
+            kept.append(p)
+            continue
+        removed = True
+        # "volatility of 30.1% could rise further": what stands before the modal verb is a
+        # fact; what follows is a forecast. Keep the head if it holds a figure.
+        m = _MODAL.search(p)
+        head = p[:m.start()].strip() if m else ""
+        if head and re.search(r"\d", head):
+            kept.append(head)
+    return ", ".join(kept).strip(), removed
+
+
+# finer than _CLAUSE: "net interest margin of 4.2% and a return on equity of 18.5%" are two figures
+_SUBCLAUSE = re.compile(_CLAUSE.pattern + r"|\s+and\s+", re.I)
+
+
+def _clause_around(text: str, start: int, end: int) -> str:
+    lo, hi = 0, len(text)
+    for m in _SUBCLAUSE.finditer(text):
+        if m.end() <= start:
+            lo = m.end()
+        elif m.start() >= end:
+            hi = m.start()
+            break
+    return text[lo:hi]
+
+
+def _other_quantity(text: str, fact: NumericFact) -> bool:
+    """Is this figure about something the data does not hold (a forward, quarterly, peer
+    or other-period number)? Judged inside the figure's own clause."""
+    clause = _clause_around(text, fact.start, fact.end)
+    for m in _OTHER_QTY.finditer(clause):
+        if m.group(1) == "26":                       # FY26: the year the data covers
+            continue
+        return True
+    return False
 # "50-day", "14 days", "52-week": the length of a window, not a claim about the data
 _WINDOW_AFTER = re.compile(r"^[-\s]?(?:day|week|month|year|session|trading)s?\b", re.I)
 
@@ -267,6 +337,15 @@ _NOT_PRICE = frozenset({"earning", "eps", "dividend", "book", "target", "revenue
                         "average", "sma", "volatility", "return", "margin"})
 
 
+def _unit_group(unit: str) -> str:
+    u = unit.lower()
+    if u in ("", "x", "×"):
+        return "ratio"
+    if u in ("cr", "crore", "lakh", "lakh crore", "lakh cr", "trillion", "bn", "billion", "mn", "million"):
+        return "money"                    # ₹1.63 trillion and 1,626,333 cr are the same kind of figure
+    return u
+
+
 def _closest_actual(verifier: VerificationAgent, fact: NumericFact, claim_text: str,
                     evidence_texts: List[str]) -> Optional[NumberCheck]:
     """What the data holds for the quantity this sentence got wrong."""
@@ -291,7 +370,7 @@ def _closest_actual(verifier: VerificationAgent, fact: NumericFact, claim_text: 
         for cand in extract_numbers(text):
             if text[max(0, cand.start - 1):cand.start] == "(":
                 continue                    # the period in "RSI(14)", not a value
-            if cand.unit != fact.unit or _WINDOW_AFTER.match(text[cand.end:cand.end + 12]):
+            if _unit_group(cand.unit) != _unit_group(fact.unit) or _WINDOW_AFTER.match(text[cand.end:cand.end + 12]):
                 continue
             consider(cand, _evidence_labels(text, cand), context)
 
@@ -356,11 +435,18 @@ def audit_text(text: str, pipeline, ticker: Optional[str] = None) -> AuditResult
         if verifier is None:
             verifier = verifiers[tic] = VerificationAgent(store, threshold=pipeline.threshold)
 
-        claim = Claim.new("external", "audit", sent)
+        # forecasts and opinions are set aside clause by clause, so a hedge ("... which could
+        # lead to a pull-back") does not stop the factual part from being checked
+        core, had_opinion = _factual_clauses(sent)
+        claim = Claim.new("external", "audit", core or sent)
+        # pasted text carries no citation: the structured evidence (prices, ratios, statements)
+        # is always in scope, so a sentence that touches several topics is not judged on
+        # whichever five chunks happened to be retrieved. News headlines stay out of it.
+        claim.cited_chunk_ids = [cid for cid, ch in store.chunks.items() if ch.doc_type != "news"]
         _drop_period_labels(claim)
         conflicts, confirmed = verifier._logic_check(claim)
 
-        if _OPINION.search(sent):
+        if had_opinion and not core:
             results.append(AuditedSentence(i, sent, tic, UNCHECKABLE,
                                            "forecast, target or opinion; cannot be checked against past data"))
             continue
@@ -374,10 +460,17 @@ def audit_text(text: str, pipeline, ticker: Optional[str] = None) -> AuditResult
         evidence_texts = [e.text for e in evidence]
 
         checks: List[NumberCheck] = []
+        unsupported: List[str] = []
         for f in claim.numbers:
-            if f.raw in verdict.unsupported_numbers:
-                checks.append(_closest_actual(verifier, f, sent, evidence_texts)
+            if _other_quantity(claim.text, f):
+                # a forward, quarterly, peer or other-period figure: the data holds a different
+                # quantity, so it is neither confirmed nor contradicted, even if it looks close
+                checks.append(NumberCheck(raw=f.raw, matched=False))
+                unsupported.append(f.raw)
+            elif f.raw in verdict.unsupported_numbers:
+                checks.append(_closest_actual(verifier, f, claim.text, evidence_texts)
                               or NumberCheck(raw=f.raw, matched=False))
+                unsupported.append(f.raw)
             else:
                 checks.append(NumberCheck(raw=f.raw, matched=True))
 
@@ -386,11 +479,11 @@ def audit_text(text: str, pipeline, ticker: Optional[str] = None) -> AuditResult
         if conflicts or reason.startswith("claim entity") or has_comparator:
             # the data holds a comparable value and it differs, or the direction is wrong
             status = CONTRADICTED
-        elif verdict.unsupported_numbers:
+        elif unsupported:
             # the data holds nothing to compare this figure with: not proven wrong
             status = UNSUPPORTED
-            reason = "no figure in the data to compare with: " + ", ".join(verdict.unsupported_numbers)
-        elif (claim.numbers and verdict.numeric_support >= 1.0) or (confirmed and not conflicts):
+            reason = "no figure in the data to compare with: " + ", ".join(unsupported)
+        elif (claim.numbers and not unsupported) or (confirmed and not conflicts):
             status, reason = VERIFIED, ""
             if _EVENT.search(sent) or (not claim.numbers and _DATED.search(sent)):
                 # part of the sentence checks out, but it also asserts dates, chart patterns

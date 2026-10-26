@@ -71,15 +71,31 @@ _STOP = frozenset("""
 a an the of for in on at to by and or is are was were be been being as with from
 that this which it its year years over against than into per rs cr crore lakh
 bps bn mn x percent cent stood stands remained reported about approximately
+near nearly roughly around slightly significantly neutral mixed solid robust healthy modest
+moderate relatively exceptional exceptionally elevated stable steady negligible conservative
+strong strongly weak remains remain
 """.split())
 
+# Short forms and their spelled-out forms must bind to each other: a claim about "ROE" is
+# about the evidence's "return on equity", "EPS" about "earnings per share".
+_ABBREV = {"p/e": "price earning", "d/e": "debt equity", "p/b": "price book", "roe": "return equity",
+           "eps": "earning share", "nim": "net interest margin", "relative strength index": "rsi"}
+_ABBREV_RE = re.compile("(?<![a-z])(?:" + "|".join(re.escape(k) for k in _ABBREV) + ")(?![a-z])",
+                        re.IGNORECASE)
 _TOKEN = re.compile(r"[a-z]+")
 _SENT_SPLIT = re.compile(r"(?<=\S)\.\s+(?=[A-Z0-9₹])")
 _DOWN = re.compile(
-    r"\b(?:fell|fall|falls|fallen|declined?|dropped?|drops?|down|decreased?|"
-    r"lower|lost|contracted|slipped|dipped)\b((?:\s+(?!to\b)[\w-]+){0,3})\W*$",
+    r"\b(?:fell|fall|falls|falling|fallen|declined?|declining|dropped?|drops?|dropping|down|"
+    r"decreased?|decreasing|lower|lost|contracted|slipped|slipping|sliding|dipped|shed)\b"
+    r"((?:\s+(?!to\b)[\w-]+){0,3})\W*$",
     re.IGNORECASE)
 _SIGNED_UNITS = {"%", "percent", "per cent", "bps"}
+# "21.7% below its level" is a fall even though no minus sign is printed
+_DOWN_AFTER = re.compile(r"^\s*(?:(?:price|share|stock)\s+)?(?:below|under|beneath|lower|down|decline|"
+                         r"drop|loss|fall|decrease)(?![a-z])", re.IGNORECASE)
+# "around/about/near/roughly 62": a loose figure, matched to 2 %
+_APPROX = re.compile(r"(?:around|about|approx|approximately|roughly|nearly|near|circa|almost|~|≈)"
+                     r"[^,;.0-9]{0,18}$", re.IGNORECASE)
 
 
 # Word forms that mean the same thing in a market-data sentence. Without this, "a
@@ -94,6 +110,7 @@ _CANON = {
     "rose": "rise", "risen": "rise", "gained": "rise", "increased": "rise",
     "increase": "rise", "climbed": "rise",
     "volatile": "volatility", "annualized": "annualised",
+    "cap": "capitalisation", "capitalization": "capitalisation",
 }
 
 
@@ -127,15 +144,20 @@ def _bound(claim_labels: set, evidence_labels: set) -> bool:
     return bool(strong & evidence_labels) if strong else bool(claim_labels & evidence_labels)
 
 
-def _tokens(text: str) -> set:
+def _tokens(text: str, evidence: bool = False) -> set:
     """Content words of `text`, numbers removed, lightly stemmed and canonicalised."""
     out = set()
+    text = _ABBREV_RE.sub(lambda m: _ABBREV[m.group(0).lower()], text)
     text = _WINDOW.sub(_encode_window, text)
     for w in _TOKEN.findall(NUM_RE.sub(" ", text).lower()):
         if w in _STOP or len(w) < 2:
             continue
         w = _CANON.get(w, w)
         out.add(w[:-1] if len(w) > 3 and w.endswith("s") else w)
+    if evidence and "return" in out and "equity" not in out:
+        # "total return over the window" is what a claim "fell 14 %" describes. Evidence side
+        # only: on the claim side these words would switch on magnitude comparison.
+        out |= {"rise", "decline", "gain", "loss"}
     return out
 
 
@@ -153,11 +175,13 @@ def _claim_labels(text: str, fact: NumericFact, before: int = 8, after: int = 3)
     """
     if fact.start < 0:
         return set()
-    pre = [w for w in _TOKEN.findall(NUM_RE.sub(" ", text[:fact.start]).lower())]
-    post = [w for w in _TOKEN.findall(NUM_RE.sub(" ", text[fact.end:]).lower())]
-    window = _tokens(" ".join(pre[-before:] + post[:after]))
     lo = max([0] + [m.end() for m in _CLAUSE.finditer(text) if m.end() <= fact.start])
     hi = min([len(text)] + [m.start() for m in _CLAUSE.finditer(text) if m.start() >= fact.end])
+    pre = [w for w in _TOKEN.findall(NUM_RE.sub(" ", text[:fact.start]).lower())]
+    # words after the figure count only inside its own clause: ", suggesting that ..." is
+    # commentary on the number, not a description of it
+    post = [w for w in _TOKEN.findall(NUM_RE.sub(" ", text[fact.end:hi]).lower())]
+    window = _tokens(" ".join(pre[-before:] + post[:after]))
     return window | _tokens(text[lo:hi])
 
 
@@ -168,14 +192,14 @@ def _evidence_labels(text: str, cand: NumericFact) -> set:
         idx = text.find(part, pos)
         end = idx + len(part)
         if idx <= cand.start < end + 1:
-            return _tokens(part)
+            return _tokens(part, evidence=True)
         pos = end
-    return _tokens(text)
+    return _tokens(text, evidence=True)
 
 
 # Quantities customarily quoted as a magnitude although they are negative
 # ("drawdown of 25.7%", "a one-day VaR loss of 2.6%"): sign is not compared.
-_MAGNITUDE_LABELS = frozenset({"drawdown", "loss", "risk"})
+_MAGNITUDE_LABELS = frozenset({"drawdown", "loss", "risk", "var"})
 # Conventional RSI thresholds are definitions, not data about the company.
 _RSI_THRESHOLDS = (30.0, 70.0)
 
@@ -211,6 +235,7 @@ def _direction_conflicts(text: str, ind: dict, closes: list,
     # the digits apart without ending the [^.;] spans.)
     low = re.sub(r"(?<=\d)\.(?=\d)", "·", low)
     low = re.sub(r"\b(upper|lower) bollinger(?: bands?)?", r"bollinger \1 band", low)
+    low = low.replace("relative strength index", "rsi")
     out: List[str] = []
 
     def judge(ok: bool, desc: str) -> None:
@@ -220,7 +245,18 @@ def _direction_conflicts(text: str, ind: dict, closes: list,
             confirmed.append(desc)
 
     def neg_before(pos: int) -> bool:
-        return bool(re.search(r"\b(?:not|n't|neither|nor|no)\b", low[max(0, pos - 18):pos]))
+        """The statement is negated or is only a condition ("until the price rises above ..."),
+        so it asserts nothing about the data."""
+        if re.search(r"\b(?:not|n't|neither|nor|no)\b", low[max(0, pos - 18):pos]):
+            return True
+        return bool(re.search(r"(?:until|unless|\bif\b|\bwhen\b|\bonce\b|before|waiting|await|"
+                              r"break\w*|breach\w*|reclaim\w*|regain\w*|stabili[sz]\w*|need\w*|"
+                              r"requires?)[^.;]{0,25}$", low[max(0, pos - 45):pos]))
+
+    def approach_before(pos: int) -> bool:
+        """"nearing overbought" does not assert that the RSI is overbought."""
+        return bool(re.search(r"(?:nearing|approaching|near|close to|towards?|edging|"
+                              r"verge of|almost|about to)[^,;.]{0,12}$", low[max(0, pos - 30):pos]))
 
     # price vs moving averages
     for m in re.finditer(rf"{_PRICE}[^.;]{{0,60}}?\b({_UP}|{_DN})\b([^.;]{{0,70}}?"
@@ -251,7 +287,10 @@ def _direction_conflicts(text: str, ind: dict, closes: list,
 
     # continuation clause: "... is higher than the 20-day average but lower than the
     # 50-day average" — the subject (the price) is carried over from the first clause
-    for m in re.finditer(rf"\b(?:but|while|whereas|and)\s+(?:is\s+|remains\s+)?({_UP}|{_DN})\b"
+    for m in re.finditer(rf"\b(?:but|while|whereas|and|though|although|yet)\s+"
+                         r"(?:(?:it|they|the stock|the price|shares)\s+)?"
+                         r"(?:(?:is|are|remains?|still|slightly|just|well|comfortably|significantly)\s+)*"
+                         rf"({_UP}|{_DN})\b"
                          r"\s+(?:the\s+|its\s+)?(\d+)-day[^.;]{0,25}?(?:moving average|sma|average)",
                          low):
         if neg_before(m.start(1)) or not re.search(rf"\b{_PRICE}\b", low[:m.start()]):
@@ -293,15 +332,15 @@ def _direction_conflicts(text: str, ind: dict, closes: list,
                   f"MACD histogram {ind['macd_hist']}")
 
     # RSI zone
-    for m in re.finditer(r"rsi[^.;]{0,70}?\b(overbought|oversold|neutral)\b", low):
-        if neg_before(m.start(1)):
+    for m in re.finditer(r"\brsi\b[^.;]{0,70}?\b(overbought|oversold|neutral)\b", low):
+        if neg_before(m.start(1)) or approach_before(m.start(1)):
             continue
         r = ind["rsi_14"]
         zone = "overbought" if r >= 70 else "oversold" if r <= 30 else "neutral"
         judge(m.group(1) == zone, f"RSI {r} is {zone}")
 
     # RSI against a stated threshold: "RSI is above 70"
-    for m in re.finditer(rf"rsi[^.;]{{0,70}}?\b({_UP}|{_DN})\b[^.;]{{0,15}}?\b(\d{{2,3}})\b", low):
+    for m in re.finditer(rf"\brsi\b[^.;]{{0,70}}?\b({_UP}|{_DN})\b[^.;]{{0,15}}?\b(\d{{2,3}})\b", low):
         if neg_before(m.start(1)):
             continue
         thr = float(m.group(2))
@@ -358,7 +397,50 @@ def _direction_conflicts(text: str, ind: dict, closes: list,
                 continue
             judge(bool(re.match(_UP, m.group(1))) == (closes[-1] > closes[0]),
                   f"last close {closes[-1]} vs start {closes[0]}")
+
+    # where the stock "trades", "consolidates" or "hovers": a stated price level or range
+    # must be near the last close (within 2 %). Averages, bands, highs and lows are other
+    # quantities and are skipped.
+    close = ind["last_close"]
+    money = (r"(?:₹|inr|rs\.?)\s?(\d[\d,]*(?:\.\d+)?)"
+             r"(?!\d|,\d|\s?(?:cr|crore|lakh|bn|billion|mn|million|trillion|tn|%))")
+    skip = (r"(?!average|sma|ema|band|resistance|support|high|low|target|versus|against|from|since|"
+            r"above|below|under|beneath|over|peak|vs)")
+    for m in re.finditer(r"(?:trading|traded|trades|consolidat\w*|hover\w*|sitting|holding|range|closed|"
+                         r"stands?|stood|priced?|quote[sd]?|rebound\w*|surged?|rallied|rall(?:y|ies)|"
+                         rf"slipp\w*|closing|near the|around the)(?:{skip}[^.;]){{0,40}}?{money}"
+                         rf"(?:\s?(?:-|–|to|and)\s?(?:₹|inr|rs\.?)?\s?(\d[\d,]*(?:\.\d+)?))?", low):
+        if neg_before(m.start()):
+            continue
+        a = float(m.group(1).replace(",", ""))
+        b = float(m.group(2).replace(",", "")) if m.group(2) else a
+        lo, hi = min(a, b), max(a, b)
+        judge(lo * 0.98 <= close <= hi * 1.02, f"price level: stated {m.group(1)}"
+              + (f"-{m.group(2)}" if m.group(2) else "") + f", last close {close}")
+
+    # "52-week high/low of ₹X" against the highest/lowest close in the window (5 % allowed:
+    # a quoted 52-week high is usually an intraday figure)
+    if closes:
+        for m in re.finditer(rf"(?:52|fifty-two)[- ]week\s+(high|low)[^.;]{{0,25}}?{money}", low):
+            stated = float(m.group(2).replace(",", ""))
+            actual = max(closes) if m.group(1) == "high" else min(closes)
+            judge(abs(stated - actual) / actual <= 0.05,
+                  f"52-week {m.group(1)}: stated {stated:g}, highest/lowest close {actual:g}")
     return out
+
+
+_NOT_A_PRICE = frozenset({"earning", "eps", "share", "dividend", "target", "average", "sma", "ema",
+                          "band", "resistance", "support", "margin", "revenue", "profit", "income",
+                          "cap", "capitalisation", "capitalization", "equity", "debt", "book"})
+
+
+def _is_price(claim_text: str, fact: NumericFact) -> bool:
+    """A rupee amount with no unit and no other quantity named beside it is a share price."""
+    if fact.unit or fact.start < 0 or not re.search(r"₹|rs\.?|inr", fact.raw, re.IGNORECASE):
+        return False
+    window = _tokens(claim_text[max(0, fact.start - 40):fact.start]
+                     + " " + claim_text[fact.end:fact.end + 20])
+    return not (window & _NOT_A_PRICE) or "close" in window
 
 
 def _directed_value(fact: NumericFact, claim_text: str) -> float:
@@ -370,7 +452,7 @@ def _directed_value(fact: NumericFact, claim_text: str) -> float:
     v = fact.normalised
     if fact.unit.lower() in _SIGNED_UNITS and v > 0 and fact.start >= 0:
         window = claim_text[max(0, fact.start - 45):fact.start]
-        if _DOWN.search(window):
+        if _DOWN.search(window) or _DOWN_AFTER.match(claim_text[fact.end:fact.end + 15]):
             return -v
     return v
 
@@ -454,14 +536,28 @@ class VerificationAgent:
         from raw prices when one is available; everything else against text."""
         target = _directed_value(fact, claim_text)
         labels = _claim_labels(claim_text, fact)
+        if _is_price(claim_text, fact):
+            labels = labels | {"close"}                 # a bare rupee price is the closing price
 
         if fact.unit == "" and abs(fact.value) in _RSI_THRESHOLDS \
                 and labels & {"rsi", "overbought", "oversold"}:
             return True
         magnitude = bool(labels & _MAGNITUDE_LABELS) and fact.raw.lstrip()[:1] not in "-+−"
 
+        # A figure is allowed to be a rounding of the data ("18%" for 18.4, "₹9.2 lakh crore"
+        # for ₹9.17 lakh crore) and, after "around/about/near/roughly", a loose one (2 %).
+        approx = bool(_APPROX.search(claim_text[max(0, fact.start - 30):fact.start]))
+        half_step = 0.5 * 10 ** (-fact.decimals) * fact.scale
+        rel_tol = max(self.tolerance, 0.02) if approx else self.tolerance
+
+        def near(x: float, t: float) -> bool:
+            if t == 0:
+                return abs(x) <= 1e-9
+            gap = abs(x - t)
+            return gap / max(abs(t), 1e-9) <= rel_tol or gap <= half_step
+
         def close(c: float) -> bool:
-            return self._close(c, target) or (magnitude and self._close(abs(c), abs(target)))
+            return near(c, target) or (magnitude and near(abs(c), abs(target)))
 
         # recomputed from raw prices: always available, whatever retrieval returned.
         # The whole claim sentence may name the indicator ("The RSI ... indicates

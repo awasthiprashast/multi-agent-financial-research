@@ -99,7 +99,10 @@ class ResearchPipeline:
     def _build(self, ticker: str) -> dict:
         t0 = time.perf_counter()
         chunks, prices, news_gold, mode = load_corpus(ticker, prefer_live=self.prefer_live)
+        return self._assemble(ticker, chunks, prices, news_gold, mode, t0)
 
+    def _assemble(self, ticker: str, chunks, prices, news_gold, mode: str, t0: float) -> dict:
+        """Index loaded (or frozen) source data and compute everything derived from it."""
         collector = DataCollectionAgent()
         indicators = collector.compute(ticker, prices)
         chunks = list(chunks) + collector.derived_evidence(ticker, indicators, prices)
