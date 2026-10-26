@@ -40,7 +40,7 @@ Use it three ways: the Streamlit app (**Audit a text** tab), `POST /audit` on th
 |---|---|---|
 | Verification benchmark, ablation, router, grounding | **synthetic** snapshot corpus with known ground truth (`provenance: synthetic-demo`) | needed so that "supported" has a label |
 | LLM-analyst evaluation | snapshot corpus, claims written by a **local LLM** (Ollama `mistral`) | real model output, synthetic evidence |
-| Live reports (default outside `--offline`) | **real** Yahoo Finance prices, annual statements (revenue, margins, EPS, ROE, leverage) and ratios, plus Google News headlines from the last 30 days; no synthetic data is mixed in | 12 NSE large-caps |
+| Live reports (default outside `--offline`) | **real** Yahoo Finance prices, annual statements (revenue, margins, EPS, ROE, leverage) and ratios, plus Google News headlines from the last 30 days; no synthetic data is mixed in | 12 curated NSE large-caps, plus any NSE/BSE company found by name (Yahoo search) |
 | Sentiment-vs-returns study | **real** headlines (Google News RSS) + **real** prices (yfinance), 11 NSE equities | `eval/sentiment_study.py` |
 
 Numbers from the synthetic corpus describe how the *mechanism* behaves on a
@@ -95,8 +95,12 @@ wording is a fixed function of those facts. It makes no recommendation.
 - Directional checks cover the technical-indicator statements listed above, not
   arbitrary prose. Rules were extended after auditing LLM output (see below), so
   coverage is whatever has been audited — extend `_direction_conflicts` for more.
-- Entity binding knows the 12 companies in `data/universe.py`; a claim naming any
-  other company is not entity-checked.
+- Entity binding knows the 12 curated companies plus any company looked up in the
+  current session; a claim naming a company that was never looked up is not
+  entity-checked. Companies found by name get the company name and ticker stem as
+  aliases only, so a headline that uses a brand name Yahoo does not list may be missed.
+- Data quality varies by company: banks and insurers have no "revenue" or "operating
+  margin" in Yahoo's statements, small companies have thin news. The app says so.
 - Label binding needs a distinguishing word to overlap ("operating margin" will not
   match "net margin" evidence), but very different wording for the same quantity can
   be rejected: the verifier errs towards withholding.
@@ -249,7 +253,7 @@ features.
 pip install -e ".[all,dev]"        # (requirements-dev.txt) or just `pip install -e .` for the small core
 
 python pipeline.py "Should I look at TCS for a 1-year hold?" --offline   # CLI, synthetic corpus
-python pipeline.py "Give me a full report on HDFC Bank"                  # CLI, live data (12 companies)
+python pipeline.py "Give me a full report on HDFC Bank"                  # CLI, live data (12 curated; the UI and API accept any NSE/BSE company)
 python pipeline.py "Complete analysis of TCS" --offline --llm            # LLM analysts
 streamlit run frontend/streamlit_app.py                                  # demo UI: audit a text + research report
 uvicorn api.main:app --reload                                            # REST API (/audit, /research, /verify)
@@ -309,7 +313,7 @@ agents/
 api/                    FastAPI service (auth, rate limit, background jobs)
 rag/                    embedder (pluggable) + evidence store
 data/
-  universe.py           the 12 supported companies (single source of truth)
+  universe.py           the curated 12 + run-time registry for any NSE/BSE company (single source of truth)
   corpus.py             snapshot corpus; live evidence (prices, statements, news)
   connectors/           yfinance, Google News, GDELT, RSS
 eval/                   perturbation benchmark, ablation, LLM eval, sentiment study, router test set

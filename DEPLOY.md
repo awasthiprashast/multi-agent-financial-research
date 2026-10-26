@@ -93,8 +93,9 @@ the server log line. Set `FINRESEARCH_LOG_JSON=1` for JSON logs (the image does)
 - **Unofficial data sources.** Prices and fundamentals come from Yahoo Finance via
   `yfinance`, headlines from Google News RSS. Both have terms of use and no uptime
   guarantee; check them before commercial or public use, or swap in a licensed feed.
-- **Coverage.** 12 large-cap NSE companies are supported live (`data/universe.py`; add
-  one `Company` entry to add another). Only TCS, Reliance and Infosys have an offline
+- **Coverage.** 12 curated large-cap NSE companies, plus any NSE/BSE company found by name
+  (`GET /companies/search?q=`, then pass its `ticker`). A company is looked up and registered
+  on first use; the first load takes 5 to 30 seconds. Yahoo may throttle a shared server. Only TCS, Reliance and Infosys have an offline
   synthetic snapshot, so `FINRESEARCH_OFFLINE=1` serves just those three. Fundamentals
   are Yahoo Finance's annual income statement and balance sheet (latest two fiscal
   years) plus headline ratios; they are **not** parsed from the companies' own annual

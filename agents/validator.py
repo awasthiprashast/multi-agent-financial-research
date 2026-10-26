@@ -487,14 +487,20 @@ class VerificationAgent:
     # ------------------------------------------------------------- entity
     #: Company surface forms the system knows about. Extending this list is the
     #: only change needed to cover a new issuer.
-    ENTITY_FORMS = {c.ticker: list(c.aliases) for c in COMPANIES}
-    ENTITY_FORMS["HDFCBANK.NS"].append("hdfc")      # the bare group name also names the bank
+    @staticmethod
+    def entity_forms() -> dict:
+        """Read from the company list on every call, so companies registered at run
+        time (any NSE/BSE stock) are recognised too."""
+        forms = {c.ticker: list(c.aliases) for c in COMPANIES}
+        if "HDFCBANK.NS" in forms:
+            forms["HDFCBANK.NS"].append("hdfc")      # the bare group name also names the bank
+        return forms
 
     def _entities_in(self, text: str) -> set:
         # Whole-word match: "ril" must not fire inside "April" or "brilliant".
         low = text.lower()
         found = set()
-        for tic, forms in self.ENTITY_FORMS.items():
+        for tic, forms in self.entity_forms().items():
             if any(re.search(rf"(?<![a-z0-9]){re.escape(f)}(?![a-z0-9])", low)
                    for f in forms):
                 found.add(tic)

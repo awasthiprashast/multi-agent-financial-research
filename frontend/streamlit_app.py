@@ -51,11 +51,17 @@ from agents.auditor import (  # noqa: E402
 )
 from agents.briefing import make_briefing  # noqa: E402
 from data.corpus import DataUnavailableError  # noqa: E402
-from data.universe import NAME, UnknownCompanyError, supported_tickers  # noqa: E402
+from data.universe import (  # noqa: E402
+    CURATED_TICKERS,
+    NAME,
+    UnknownCompanyError,
+    register_company,
+    search_companies,
+)
 from pipeline import ResearchPipeline  # noqa: E402
 
 OFFLINE = os.environ.get("FINRESEARCH_OFFLINE", "") in ("1", "true", "yes")
-TICKERS = supported_tickers(offline=OFFLINE)
+TICKERS = CURATED_TICKERS[:3] if OFFLINE else list(CURATED_TICKERS)   # offline: snapshot companies
 THRESHOLD = 0.60
 
 st.set_page_config(page_title="Multi-Agent Financial Research Assistant", layout="wide")
@@ -125,6 +131,41 @@ def show_evidence(rows) -> None:
 
 
 # ------------------------------------------------------------------ check a text
+AUTO, OTHER = "__auto__", "__other__"
+
+
+def company_picker(key: str, allow_auto: bool = False):
+    """A curated company, or any NSE/BSE company found by name. Returns the ticker, AUTO
+    (work it out from the text), or None while no company is chosen yet."""
+    options = ([AUTO] if allow_auto else []) + TICKERS + ([] if OFFLINE else [OTHER])
+
+    def label(t: str) -> str:
+        if t == AUTO:
+            return "Work it out from the text"
+        if t == OTHER:
+            return "Another listed company (search by name)…"
+        return f"{NAME[t]} ({t})"
+
+    choice = st.selectbox("Company" if not allow_auto else "Which company is it about?",
+                          options, format_func=label, key=f"{key}_sel")
+    if choice != OTHER:
+        return choice
+    query = st.text_input("Company name or NSE/BSE ticker", key=f"{key}_q",
+                          placeholder="e.g. Paytm, Asian Paints, HAL, Bajaj Finance")
+    if not query.strip():
+        return None
+    with st.spinner("Searching NSE and BSE…"):
+        found = search_companies(query.strip())
+    if not found:
+        st.warning("No NSE or BSE listing found for that. Try the current name (companies get "
+                   "renamed or demerged) or the exchange ticker.")
+        return None
+    pick = st.radio("Did you mean", list(found), key=f"{key}_pick",
+                    format_func=lambda c: f"{c.name} · {c.ticker} ({c.exchange})")
+    register_company(pick.ticker, pick.name)
+    return pick.ticker
+
+
 def audit_tab() -> None:
     st.subheader("Fact-check any text about a company")
     st.markdown(
@@ -141,20 +182,21 @@ def audit_tab() -> None:
     text = st.text_area("Text to check", key="audit_text", height=170, max_chars=8000,
                         placeholder="Paste something written about a company, e.g. “Infosys "
                                     "closed above its 50-day average and its RSI is 72.”")
-    ticker_choice = st.selectbox(
-        "Which company is it about?", ["Work it out from the text"] + TICKERS,
-        format_func=lambda t: t if t.startswith("Work") else f"{NAME[t]} ({t})")
+    ticker_choice = company_picker("audit", allow_auto=True)
 
     if not st.button("Check it", type="primary"):
         return
     if not text.strip():
         st.warning("Paste some text first.")
         return
+    if ticker_choice is None:
+        st.warning("Choose the company first (search for it above).")
+        return
     try:
         with st.spinner("Fetching data and checking each sentence…"):
             result = audit_text(
                 text, get_pipeline(),
-                ticker=None if ticker_choice.startswith("Work") else ticker_choice)
+                ticker=None if ticker_choice == AUTO else ticker_choice)
     except (UnknownCompanyError, DataUnavailableError, ValueError) as exc:
         st.error(str(exc))
         return
@@ -214,8 +256,10 @@ def key_numbers(ticker: str, ctx: dict) -> list:
 
 def briefing_tab() -> None:
     st.subheader("What does the data say about a company?")
-    ticker = st.selectbox("Company", TICKERS, format_func=lambda t: f"{NAME[t]} ({t})",
-                          key="brief_ticker")
+    ticker = company_picker("brief")
+    if ticker is None:
+        st.info("Search for a company above.")
+        return
     question = st.text_input("Your question", f"What does the data say about {NAME[ticker]} right now?")
 
     if st.button("Get briefing", type="primary"):
@@ -236,6 +280,13 @@ def briefing_tab() -> None:
         return
     _, rep, brief, numbers = saved
 
+    missing = [what for agent, section, what in
+               (("fundamental", "Fundamental Analysis", "company financials"),
+                ("sentiment", "Sentiment Analysis", "recent news"))
+               if agent in rep.agents_invoked and section not in rep.sections]
+    if missing:
+        st.info("Limited data for this company: no " + " and no ".join(missing)
+                + " could be found, so the summary covers prices and indicators only.")
     for start in range(0, len(numbers), 4):         # four per row: stays readable on narrow screens
         row = numbers[start:start + 4]
         for col, (label, value) in zip(st.columns(4), row):
@@ -292,8 +343,10 @@ def chatbot_tab() -> None:
         st.info("No language model is configured on this server, so this tab is switched off. "
                 "Add GROQ_API_KEY (free at console.groq.com) in the app's secrets to enable it.")
         return
-    ticker = st.selectbox("Company", TICKERS, format_func=lambda t: f"{NAME[t]} ({t})",
-                          key="chat_ticker")
+    ticker = company_picker("chat")
+    if ticker is None:
+        st.info("Search for a company above.")
+        return
     question = st.text_input(
         "Question", f"How is {NAME[ticker]} doing right now, technically and fundamentally? "
                     f"Include specific numbers.", key=f"chat_q_{ticker}")
@@ -414,7 +467,7 @@ with st.sidebar:
                 "5. setting aside forecasts and opinions")
     llm = get_llm_backend()
     st.caption(f"Data: {'offline sample' if OFFLINE else 'live Yahoo Finance + Google News'} · "
-               f"{len(TICKERS)} companies · summaries: "
+               f"{len(TICKERS)} curated + any NSE/BSE company · summaries: "
                + (f"written by {llm.name}" if llm else "rule-based"))
 
 tab_brief, tab_check, tab_chat, tab_eval = st.tabs(

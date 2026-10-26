@@ -56,11 +56,24 @@ def _write_cache(key: str, payload: dict) -> None:
 
 
 # ---------------------------------------------------------------- prices
+def _drop_bad_rows(payload: dict) -> dict:
+    """Yahoo sometimes returns today's unfinished bar with a NaN (or zero) price. One such
+    row turns every indicator into NaN, so rows with a missing OHLC value are removed."""
+    keys = [k for k in ("open", "high", "low", "close") if k in payload]
+    keep = [i for i in range(len(payload["close"]))
+            if all(payload[k][i] == payload[k][i] and payload[k][i] > 0 for k in keys)]
+    if len(keep) != len(payload["close"]):
+        for k in ("date", "open", "high", "low", "close", "volume"):
+            if k in payload:
+                payload[k] = [payload[k][i] for i in keep]
+    return payload
+
+
 def fetch_prices(ticker: str, period: str = "1y") -> Optional[Dict[str, list]]:
     """Daily OHLCV via yfinance. Returns None if the network is unavailable."""
     cached = _read_cache(f"px_{ticker}_{period}")
     if cached:
-        return cached
+        return _drop_bad_rows(cached)
     try:
         import yfinance as yf
 
@@ -77,6 +90,9 @@ def fetch_prices(ticker: str, period: str = "1y") -> Optional[Dict[str, list]]:
             "provenance": "yfinance",
             "retrieved": _dt.date.today().isoformat(),
         }
+        payload = _drop_bad_rows(payload)
+        if not payload["close"]:
+            return None
         _write_cache(f"px_{ticker}_{period}", payload)
         return payload
     except Exception as exc:

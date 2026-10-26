@@ -187,3 +187,12 @@ def test_groq_reasoning_models_get_room_to_think(monkeypatch):
     captured.clear()
     GroqLLM("some/other-model").generate("s", "u")
     assert "reasoning_effort" not in captured and captured["max_tokens"] == 900
+
+
+def test_an_unfinished_last_bar_does_not_poison_the_indicators():
+    from data.connectors.live import _drop_bad_rows
+    nan = float("nan")
+    p = {"date": ["a", "b", "c"], "open": [1, 2, nan], "high": [1, 2, nan], "low": [1, 2, nan],
+         "close": [1.0, 2.0, nan], "volume": [1, 1, 0]}
+    out = _drop_bad_rows(p)
+    assert out["close"] == [1.0, 2.0] and out["date"] == ["a", "b"] and out["volume"] == [1, 1]

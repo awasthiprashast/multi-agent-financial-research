@@ -39,13 +39,21 @@ from typing import Deque, Dict, Optional
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from fastapi import Depends, FastAPI, HTTPException, Request  # noqa: E402
+from fastapi import Query as QueryParam  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from fastapi.responses import JSONResponse  # noqa: E402
 from pydantic import BaseModel, Field  # noqa: E402
 
 import config  # noqa: E402,F401  (loads .env)
 from data.corpus import DataUnavailableError  # noqa: E402
-from data.universe import COMPANIES, UnknownCompanyError, find_tickers, supported_tickers  # noqa: E402
+from data.universe import (
+    COMPANIES,
+    UnknownCompanyError,
+    ensure_registered,
+    find_tickers,
+    search_companies,
+    supported_tickers,
+)  # noqa: E402
 from logging_setup import setup_logging  # noqa: E402
 from pipeline import ResearchPipeline  # noqa: E402
 
@@ -165,8 +173,13 @@ class AuditRequest(BaseModel):
 
 
 def _check_ticker(ticker: str | None) -> None:
-    if ticker is not None and ticker not in SUPPORTED:
-        raise HTTPException(422, f"unsupported ticker {ticker!r}; supported: {SUPPORTED}")
+    if ticker is not None and ticker not in supported_tickers(offline=OFFLINE):
+        if not OFFLINE:
+            ensure_registered(ticker)               # any NSE/BSE symbol, looked up on demand
+        if ticker not in supported_tickers(offline=OFFLINE):
+            raise HTTPException(
+                422, f"unsupported ticker {ticker!r}; use an NSE/BSE symbol such as 'PAYTM.NS' "
+                     "(see GET /companies/search?q=<name>)")
 
 
 def _check_query(q: "Query") -> None:
@@ -217,6 +230,17 @@ def health():
             "llm": pipe.llm.name if pipe.llm else None, "auth_required": bool(API_KEY),
             "offline": OFFLINE, "supported_tickers": SUPPORTED,
             "companies": {c.ticker: c.name for c in COMPANIES if c.ticker in SUPPORTED}}
+
+
+@app.get("/companies/search", dependencies=GUARDS)
+async def company_search(q: str = QueryParam(min_length=2, max_length=60)):
+    """NSE/BSE companies matching a name or ticker, to use as `ticker` in other calls."""
+    if OFFLINE:
+        raise HTTPException(503, "company search needs live mode")
+    loop = asyncio.get_running_loop()
+    found = await loop.run_in_executor(_executor, search_companies, q)
+    return {"query": q, "matches": [{"ticker": c.ticker, "name": c.name, "exchange": c.exchange}
+                                    for c in found]}
 
 
 @app.post("/research", dependencies=GUARDS)

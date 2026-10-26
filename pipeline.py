@@ -25,7 +25,13 @@ from agents.synthesis import SynthesisAgent
 from agents.validator import VerificationAgent
 from core import Claim, Report
 from data.corpus import load_corpus
-from data.universe import COMPANIES, UnknownCompanyError, resolve_ticker, supported_tickers
+from data.universe import (
+    COMPANIES,
+    UnknownCompanyError,
+    ensure_registered,
+    resolve_ticker,
+    supported_tickers,
+)
 from rag.store import EvidenceStore
 
 log = logging.getLogger(__name__)
@@ -164,6 +170,8 @@ class ResearchPipeline:
             raise UnknownCompanyError(
                 "no supported company named in the query; supported: "
                 + ", ".join(c.name for c in COMPANIES if c.ticker in self.supported))
+        if ticker not in self.supported and self.prefer_live:
+            ensure_registered(ticker)               # any NSE/BSE symbol, looked up on demand
         if ticker not in self.supported:
             raise UnknownCompanyError(
                 f"{ticker} is not available in {'offline' if not self.prefer_live else 'live'} "
