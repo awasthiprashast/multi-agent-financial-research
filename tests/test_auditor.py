@@ -206,3 +206,9 @@ def test_a_wrong_price_level_is_explained_against_the_last_close_and_corrected(f
 def test_a_big_market_cap_is_shown_in_lakh_crore(fpipe):
     r = audit_text("The market cap is roughly ₹1.06 lakh crore.", fpipe, ticker="TCS.NS").sentences[0]
     assert r.status == CONTRADICTED and "lakh crore" in r.explanation
+
+
+def test_a_fiscal_year_label_is_not_two_numbers():
+    from core import extract_numbers
+    assert [n.raw for n in extract_numbers("FY 2025-26 revenue grew 12% YoY")] == ["12%"]
+    assert [n.raw for n in extract_numbers("margin was 24.3% in 2025/2026")] == ["24.3%"]

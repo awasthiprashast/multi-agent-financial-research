@@ -55,6 +55,8 @@ NUM_RE = re.compile(
 )
 
 _ISO_DATE = re.compile(r"\b\d{4}-\d{2}-\d{2}\b")
+# a fiscal-year label such as "2025-26" or "2025/2026" is a period, not two quantities
+_FY_RANGE = re.compile(r"(?<![\d.])(?:19|20)\d\d\s?[-–/]\s?\d{2,4}(?![\d.%])")
 
 _SCALE = {
     "": 1.0, "%": 1.0, "percent": 1.0, "per cent": 1.0, "x": 1.0, "×": 1.0,
@@ -101,6 +103,7 @@ def extract_numbers(text: str) -> List[NumericFact]:
     # the numbers -01, -01, -12, -28. Blank them out in place (same length) so the
     # offsets of every remaining number stay valid.
     text = _ISO_DATE.sub(lambda m: " " * len(m.group(0)), text)
+    text = _FY_RANGE.sub(lambda m: " " * len(m.group(0)), text)
     for m in NUM_RE.finditer(text):
         raw_num = m.group("num")
         if raw_num is None:

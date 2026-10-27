@@ -131,7 +131,7 @@ def stat_row(items) -> None:
 
     tiles = "".join(
         "<div style='flex:1 1 150px;min-width:140px;padding:2px 10px 12px 0'>"
-        f"<div style='font-size:0.82rem;opacity:0.7'>{html.escape(str(label))}</div>"
+        f"<div style='font-size:0.82rem;opacity:0.7;min-height:2.5em'>{html.escape(str(label))}</div>"
         f"<div style='font-size:1.8rem;line-height:1.25;font-weight:500'>{html.escape(str(value))}</div>"
         "</div>" for label, value in items)
     st.markdown(f"<div style='display:flex;flex-wrap:wrap'>{tiles}</div>", unsafe_allow_html=True)
