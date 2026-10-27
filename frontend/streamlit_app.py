@@ -124,6 +124,19 @@ BADGE = {
 }
 
 
+def stat_row(items) -> None:
+    """Figures in a row that wraps on narrow screens (st.metric truncates "₹2,496.90" to "₹2,…"
+    once its column gets small)."""
+    import html
+
+    tiles = "".join(
+        "<div style='flex:1 1 150px;min-width:140px;padding:2px 10px 12px 0'>"
+        f"<div style='font-size:0.82rem;opacity:0.7'>{html.escape(str(label))}</div>"
+        f"<div style='font-size:1.8rem;line-height:1.25;font-weight:500'>{html.escape(str(value))}</div>"
+        "</div>" for label, value in items)
+    st.markdown(f"<div style='display:flex;flex-wrap:wrap'>{tiles}</div>", unsafe_allow_html=True)
+
+
 def show_evidence(rows) -> None:
     for e in rows:
         st.markdown(f"**{e.source}** · {e.doc_type} · {e.published}")
@@ -287,10 +300,7 @@ def briefing_tab() -> None:
     if missing:
         st.info("Limited data for this company: no " + " and no ".join(missing)
                 + " could be found, so the summary covers prices and indicators only.")
-    for start in range(0, len(numbers), 4):         # four per row: stays readable on narrow screens
-        row = numbers[start:start + 4]
-        for col, (label, value) in zip(st.columns(4), row):
-            col.metric(label, value)
+    stat_row(numbers)
 
     st.markdown("#### Summary")
     for s in brief.sentences:
@@ -406,11 +416,10 @@ def evaluation_tab() -> None:
     if metrics:
         h = metrics["hallucination"]
         st.markdown("#### 1. Can it catch planted errors? (162 claims, synthetic company data)")
-        a, b, c, d = st.columns(4)
-        a.metric("Errors caught", f"{h['catch_rate_recall'] * 100:.0f}%")
-        b.metric("Correct claims wrongly rejected", f"{h['false_positive_rate'] * 100:.0f}%")
-        c.metric("Time per claim", f"{h['ms_per_claim']:.1f} ms")
-        d.metric("Claims tested", h["benchmark_size"])
+        stat_row([("Errors caught", f"{h['catch_rate_recall'] * 100:.0f}%"),
+                  ("Correct claims wrongly rejected", f"{h['false_positive_rate'] * 100:.0f}%"),
+                  ("Time per claim", f"{h['ms_per_claim']:.1f} ms"),
+                  ("Claims tested", h["benchmark_size"])])
         st.caption("The planted errors are the kinds the verifier was built for (changed "
                    "numbers, wrong company, invented details), so this shows the mechanism "
                    "works, not that it is perfect on all real text. The next test is the one "
@@ -437,10 +446,9 @@ def evaluation_tab() -> None:
                    "`results/llm_manual_audit.md`.")
     if router:
         st.markdown("#### 3. Does the router pick the right specialists?")
-        a, b, c = st.columns(3)
-        a.metric("Exact match, 30 unseen queries", f"{router['exact_match'] * 100:.0f}%")
-        b.metric("Specialists recalled", f"{router['label_recall'] * 100:.0f}%")
-        c.metric("Agent calls saved", f"{router['agent_invocation_reduction_pct']:.0f}%")
+        stat_row([("Exact match, 30 unseen queries", f"{router['exact_match'] * 100:.0f}%"),
+                  ("Specialists recalled", f"{router['label_recall'] * 100:.0f}%"),
+                  ("Agent calls saved", f"{router['agent_invocation_reduction_pct']:.0f}%")])
     real, held = load("real_text_benchmark.json"), load("real_text_benchmark_heldout.json")
     if real and held:
         pct = lambda x: "n/a" if x is None else f"{x * 100:.1f}%"      # noqa: E731
@@ -453,11 +461,10 @@ def evaluation_tab() -> None:
             "frozen data sheet (`benchmark/label_sheet.md`); "
             f"{real['ambiguous_excluded']} ambiguous ones are excluded. The data is frozen in "
             "`benchmark/frozen/`, so the benchmark runs offline and never changes.")
-        a, b, c, d = st.columns(4)
-        a.metric("Wrong sentences caught", pct(held["errors_caught"]["recall"]))
-        b.metric("Accuracy when it commits", pct(held["accuracy_when_committed"]))
-        c.metric("Correct sentences wrongly rejected", pct(held["false_reject_rate"]))
-        d.metric("Wrong sentences passed as correct", pct(held["false_accept_rate"]))
+        stat_row([("Wrong sentences caught", pct(held["errors_caught"]["recall"])),
+                  ("Accuracy when it commits", pct(held["accuracy_when_committed"])),
+                  ("Correct sentences wrongly rejected", pct(held["false_reject_rate"])),
+                  ("Wrong sentences passed as correct", pct(held["false_accept_rate"]))])
         st.caption(
             f"Held-out result: {held['scored']} sentences about 5 companies (LT, Wipro, Bharti "
             "Airtel, Hindustan Unilever, Adani Green) that were never looked at while building the "
