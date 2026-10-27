@@ -212,3 +212,8 @@ def test_a_fiscal_year_label_is_not_two_numbers():
     from core import extract_numbers
     assert [n.raw for n in extract_numbers("FY 2025-26 revenue grew 12% YoY")] == ["12%"]
     assert [n.raw for n in extract_numbers("margin was 24.3% in 2025/2026")] == ["24.3%"]
+
+
+def test_a_quarterly_sentence_is_not_compared_with_annual_figures(fpipe):
+    s = _status(fpipe, "TCS posted Q3 FY 2026 revenue of ₹1.78 trillion, up 12% YoY, and net profit of ₹380 billion.")
+    assert s.status == "unsupported" and all(n.actual is None for n in s.numbers)

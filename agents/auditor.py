@@ -85,6 +85,7 @@ _ADVICE_FRAME = re.compile(
 
 _SHARE_OF = re.compile(r"^\s*(?:%\s*)?of\s+(?:its\s+|the\s+|their\s+|total\s+)*"
                        r"(?:revenues?|sales|profits?|income|earnings|business)", re.I)
+_PART_YEAR = re.compile(r"(?<![a-z0-9])(?:q[1-4]|h[12]|[1-4]q|[12]h)(?![a-z0-9])", re.I)
 _PERIOD_MENTION = re.compile(r"(?<![a-z])(?:fy|q[1-4])[- ]?(?:20)?(\d\d)e?(?![\d])", re.I)
 
 
@@ -132,6 +133,10 @@ def _other_quantity(text: str, fact: NumericFact) -> bool:
         return True
     # "accounts for 60% of its revenue": a share of a total, which the data does not hold
     if _SHARE_OF.match(text[fact.end:fact.end + 30]):
+        return True
+    # a quarter or half-year named anywhere in the sentence ("Q3 FY 2026 revenue ...") makes every
+    # figure in it a part-year figure, which the annual data cannot settle
+    if _PART_YEAR.search(text):
         return True
     # a fiscal year or quarter named anywhere in the sentence sets the period of every figure in it
     for m in _PERIOD_MENTION.finditer(text):
