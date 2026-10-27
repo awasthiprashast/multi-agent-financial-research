@@ -23,12 +23,13 @@
   "no_clean_verdict": 111
  },
  "confusion": {
-  "gold CORRECT -> auditor C": 129,
+  "gold CORRECT -> auditor C": 128,
+  "gold CORRECT -> auditor W": 1,
   "gold CORRECT -> auditor U": 6,
   "gold CORRECT -> auditor N": 4,
   "gold WRONG -> auditor C": 3,
-  "gold WRONG -> auditor W": 70,
-  "gold WRONG -> auditor U": 4,
+  "gold WRONG -> auditor W": 69,
+  "gold WRONG -> auditor U": 5,
   "gold WRONG -> auditor N": 4,
   "gold PARTLY_CHECKABLE -> auditor U": 1,
   "gold NO_VERDICT -> auditor W": 1,
@@ -36,8 +37,8 @@
   "gold NO_VERDICT -> auditor N": 68
  },
  "errors_caught": {
-  "recall": 0.864,
-  "precision": 0.986
+  "recall": 0.852,
+  "precision": 0.972
  },
  "false_accept_rate": 0.037,
  "false_accepts": [
@@ -46,13 +47,15 @@
   "WIPRO.NS|openai/gpt-oss-120b|grounded|5"
  ],
  "correct_recognised": {
-  "recall": 0.928,
+  "recall": 0.921,
   "precision": 0.977
  },
- "false_reject_rate": 0.0,
- "false_rejects": [],
- "coverage_of_checkable": 0.918,
- "accuracy_when_committed": 0.985,
+ "false_reject_rate": 0.007,
+ "false_rejects": [
+  "SBIN.NS|openai/gpt-oss-120b|grounded|4"
+ ],
+ "coverage_of_checkable": 0.914,
+ "accuracy_when_committed": 0.98,
  "overreach_on_no_clean_verdict": 0.009,
  "by_setting": {
   "grounded": {
@@ -64,8 +67,8 @@
    },
    "errors_caught_recall": 0.714,
    "false_accept_rate": 0.214,
-   "correct_recall": 0.934,
-   "false_reject_rate": 0.0
+   "correct_recall": 0.926,
+   "false_reject_rate": 0.007
   },
   "ungrounded": {
    "scored": 162,
@@ -74,7 +77,7 @@
     "wrong": 67,
     "no_clean_verdict": 92
    },
-   "errors_caught_recall": 0.896,
+   "errors_caught_recall": 0.881,
    "false_accept_rate": 0.0,
    "correct_recall": 0.667,
    "false_reject_rate": 0.0
@@ -90,8 +93,8 @@
    },
    "errors_caught_recall": 0.81,
    "false_accept_rate": 0.071,
-   "correct_recall": 0.87,
-   "false_reject_rate": 0.0
+   "correct_recall": 0.852,
+   "false_reject_rate": 0.019
   },
   "qwen/qwen3.8-27b": {
    "scored": 187,
@@ -100,7 +103,7 @@
     "wrong": 39,
     "no_clean_verdict": 63
    },
-   "errors_caught_recall": 0.923,
+   "errors_caught_recall": 0.897,
    "false_accept_rate": 0.0,
    "correct_recall": 0.965,
    "false_reject_rate": 0.0
@@ -174,10 +177,10 @@
     "wrong": 15,
     "no_clean_verdict": 37
    },
-   "errors_caught_recall": 0.667,
+   "errors_caught_recall": 0.6,
    "false_accept_rate": 0.067,
-   "correct_recall": 1.0,
-   "false_reject_rate": 0.0
+   "correct_recall": 0.96,
+   "false_reject_rate": 0.04
   },
   "risk (volatility, drawdown, VaR)": {
    "scored": 26,
@@ -243,7 +246,8 @@
    "no_clean_verdict": 66
   },
   "confusion": {
-   "gold CORRECT -> auditor C": 75,
+   "gold CORRECT -> auditor C": 74,
+   "gold CORRECT -> auditor W": 1,
    "gold CORRECT -> auditor U": 1,
    "gold CORRECT -> auditor N": 2,
    "gold WRONG -> auditor C": 2,
@@ -255,7 +259,7 @@
   },
   "errors_caught": {
    "recall": 0.896,
-   "precision": 1.0
+   "precision": 0.977
   },
   "false_accept_rate": 0.042,
   "false_accepts": [
@@ -263,13 +267,15 @@
    "ITC.NS|openai/gpt-oss-120b|grounded|5"
   ],
   "correct_recognised": {
-   "recall": 0.962,
+   "recall": 0.949,
    "precision": 0.974
   },
-  "false_reject_rate": 0.0,
-  "false_rejects": [],
+  "false_reject_rate": 0.013,
+  "false_rejects": [
+   "SBIN.NS|openai/gpt-oss-120b|grounded|4"
+  ],
   "coverage_of_checkable": 0.952,
-  "accuracy_when_committed": 0.983,
+  "accuracy_when_committed": 0.975,
   "overreach_on_no_clean_verdict": 0.0
  },
  "test": {
@@ -286,16 +292,16 @@
    "gold CORRECT -> auditor U": 5,
    "gold CORRECT -> auditor N": 2,
    "gold WRONG -> auditor C": 1,
-   "gold WRONG -> auditor W": 27,
-   "gold WRONG -> auditor U": 1,
+   "gold WRONG -> auditor W": 26,
+   "gold WRONG -> auditor U": 2,
    "gold WRONG -> auditor N": 4,
    "gold NO_VERDICT -> auditor W": 1,
    "gold NO_VERDICT -> auditor U": 16,
    "gold NO_VERDICT -> auditor N": 28
   },
   "errors_caught": {
-   "recall": 0.818,
-   "precision": 0.964
+   "recall": 0.788,
+   "precision": 0.963
   },
   "false_accept_rate": 0.03,
   "false_accepts": [
@@ -307,7 +313,7 @@
   },
   "false_reject_rate": 0.0,
   "false_rejects": [],
-  "coverage_of_checkable": 0.872,
+  "coverage_of_checkable": 0.862,
   "accuracy_when_committed": 0.988,
   "overreach_on_no_clean_verdict": 0.022
  },
@@ -318,6 +324,13 @@
    "pred": "C",
    "text": "However, the balance sheet shows a high debt-to-equity ratio of 8.6%, and the stock has logged a steep 40% drawdown historically, with a recent 21.7% decline over the past 246 sessions and a 1-day VaR95 of -3.39%.",
    "reason": "8.6% matches the data. 40% matches the data. 21.7% matches the data. 246 matches the data. -3.39% matches the data."
+  },
+  {
+   "id": "SBIN.NS|openai/gpt-oss-120b|grounded|4",
+   "gold": "C",
+   "pred": "W",
+   "text": "Recent fundamentals are solid, with revenue up 9.2% YoY to ₹381,709 cr and EPS rising to ₹91.16, while the equity return remains robust at around 14-15%.",
+   "reason": "14 does not appear in the data. The data says 23.7%, not -15%."
   },
   {
    "id": "ITC.NS|openai/gpt-oss-120b|grounded|5",
@@ -352,6 +365,12 @@
    "gold": "W",
    "pred": "N",
    "text": "Key risks include the slowdown in global IT spending, heightened competition from larger peers, and potential currency headwinds as a sizable portion of revenue is earned in USD; any further deterioration in macro-economic sentiment could pressure margins and push the stock back toward its lower support level near ₹580."
+  },
+  {
+   "id": "WIPRO.NS|qwen/qwen3.8-27b|ungrounded|5",
+   "gold": "W",
+   "pred": "U",
+   "text": "However, investors should be cautious of the company's high debt-to-equity ratio, which stands at about 0.8x, a level that has increased due to recent strategic acquisitions and may pressure free cash flow in the near term."
   },
   {
    "id": "BHARTIARTL.NS|qwen/qwen3.8-27b|ungrounded|4",

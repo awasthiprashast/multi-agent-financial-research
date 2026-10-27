@@ -238,9 +238,9 @@ The benchmarks above plant their errors or use synthetic evidence. This one does
 
 | | Wrong caught | Correct recognised | Correct wrongly rejected | Wrong passed as correct | Verdict given | Accuracy when it gives one |
 |---|---|---|---|---|---|---|
-| Development, 7 companies (tuned on) | 89.6 % | 96.2 % | 0.0 % | 4.2 % | 95.2 % | 98.3 % |
+| Development, 7 companies (tuned on) | 89.6 % | 94.9 % | 1.3 % | 4.2 % | 95.2 % | 97.5 % |
 | **Held-out, 5 companies (code frozen)** | 81.8 % | 86.9 % | 1.6 % | 3.0 % | 87.2 % | 97.6 % |
-| Held-out after fixing what it exposed* | 81.8 % | 88.5 % | 0.0 % | 3.0 % | 87.2 % | 98.8 % |
+| Held-out after fixing what it exposed* | 78.8 % | 88.5 % | 0.0 % | 3.0 % | 86.2 % | 98.8 % |
 
 \*The held-out set exposed several real bugs ("price-to-earnings" read as a share price, "exceeding
 100x" read as a value, labels such as "D2C" read as numbers, net debt confused with debt, a share of

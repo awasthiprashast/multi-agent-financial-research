@@ -78,10 +78,23 @@ strong strongly weak remains remain
 
 # Short forms and their spelled-out forms must bind to each other: a claim about "ROE" is
 # about the evidence's "return on equity", "EPS" about "earnings per share".
-_ABBREV = {"p/e": "price earning", "d/e": "debt equity", "p/b": "price book", "roe": "return equity",
-           "eps": "earning share", "nim": "net interest margin", "relative strength index": "rsi"}
-_ABBREV_RE = re.compile("(?<![a-z])(?:" + "|".join(re.escape(k) for k in _ABBREV) + ")(?![a-z])",
-                        re.IGNORECASE)
+#
+# Each measure becomes ONE token, so that "ROE" binds to "return on equity" and to nothing else:
+# as two words ("return", "equity") it also bound to volatility of "daily returns" and to
+# debt-to-equity.
+_ABBREV = {
+    "return on equity": "roe", "roe": "roe",
+    "debt-to-equity": "debteq", "debt to equity": "debteq", "d/e": "debteq",
+    "price-to-earnings": "pe", "price to earnings": "pe", "p/e": "pe",
+    "earnings per share": "eps", "eps": "eps",
+    "price-to-book": "pb", "price to book": "pb", "p/b": "pb",
+    "net interest margin": "nim", "nim": "nim",
+    "relative strength index": "rsi",
+    "market capitalisation": "mcap", "market capitalization": "mcap", "market cap": "mcap",
+}
+_ABBREV_RE = re.compile(
+    "(?<![a-z])(?:" + "|".join(re.escape(k) for k in sorted(_ABBREV, key=len, reverse=True)) + ")(?![a-z])",
+    re.IGNORECASE)
 _TOKEN = re.compile(r"[a-z]+")
 _SENT_SPLIT = re.compile(r"(?<=\S)\.\s+(?=[A-Z0-9₹])")
 _DOWN = re.compile(
@@ -152,7 +165,7 @@ def _bound(claim_labels: set, evidence_labels: set) -> bool:
 def _tokens(text: str, evidence: bool = False) -> set:
     """Content words of `text`, numbers removed, lightly stemmed and canonicalised."""
     out = set()
-    text = _ABBREV_RE.sub(lambda m: _ABBREV[m.group(0).lower()], text)
+    text = _ABBREV_RE.sub(lambda m: " " + _ABBREV[m.group(0).lower()] + " ", text)
     text = _WINDOW.sub(_encode_window, text)
     for w in _TOKEN.findall(NUM_RE.sub(" ", text).lower()):
         if w in _STOP or len(w) < 2:
@@ -168,6 +181,9 @@ def _tokens(text: str, evidence: bool = False) -> set:
 
 _CLAUSE = re.compile(r",\s|;|:|\band\b|\bwhile\b|\bbut\b|\bwith\b|\bwhich\b|"
                      r"\bindicating\b|\bsuggest(?:ing|s)?\b", re.IGNORECASE)
+
+
+_MEASURES = frozenset({"roe", "debteq", "pe", "eps", "pb", "nim", "rsi", "mcap"})
 
 
 def _claim_labels(text: str, fact: NumericFact, before: int = 8, after: int = 3) -> set:
@@ -187,7 +203,12 @@ def _claim_labels(text: str, fact: NumericFact, before: int = 8, after: int = 3)
     # commentary on the number, not a description of it
     post = [w for w in _TOKEN.findall(NUM_RE.sub(" ", text[fact.end:hi]).lower())]
     window = _tokens(" ".join(pre[-before:] + post[:after]))
-    return window | _tokens(text[lo:hi])
+    out = window | _tokens(text[lo:hi])
+    if not out & _MEASURES:
+        # "Return on equity, computed as net income over year-end equity, was 45.9 %": the
+        # measure is named earlier in the sentence than the number's own clause
+        out |= _tokens(text) & _MEASURES
+    return out
 
 
 def _evidence_labels(text: str, cand: NumericFact) -> set:
@@ -436,7 +457,8 @@ def _direction_conflicts(text: str, ind: dict, closes: list,
 
 _NOT_A_PRICE = frozenset({"earning", "eps", "share", "dividend", "target", "average", "sma", "ema",
                           "band", "resistance", "support", "margin", "revenue", "profit", "income",
-                          "cap", "capitalisation", "capitalization", "equity", "debt", "book"})
+                          "cap", "capitalisation", "capitalization", "equity", "debt", "book", "roe", "pe", "pb",
+                          "debteq", "mcap", "nim"})
 
 
 def _is_price(claim_text: str, fact: NumericFact) -> bool:

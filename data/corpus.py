@@ -255,6 +255,9 @@ def _live_fundamentals_chunk(ticker: str):
     name = COMPANY_NAME.get(ticker, ticker)
     text = (f"Headline fundamentals for {name} from Yahoo Finance as of "
             f"{f.get('retrieved', '')}. " + " ".join(parts))
+    if f.get("computed_fields"):
+        text += (" Where Yahoo supplied no value these were computed from the latest annual "
+                 "statements and the last close: " + ", ".join(f["computed_fields"]) + ".")
     src = f"fundamentals_{ticker}"
     return Chunk(chunk_id=Chunk.make_id(src, text), text=text, source=src,
                  doc_type="fundamentals", ticker=ticker,

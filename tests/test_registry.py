@@ -70,3 +70,29 @@ def test_search_failure_returns_nothing_instead_of_raising(monkeypatch, clean_re
 def test_ensure_registered_rejects_symbols_that_are_not_nse_bse(clean_registry):
     assert U.ensure_registered("AAPL") is None
     assert U.ensure_registered("TCS.NS").name == "Tata Consultancy Services"   # already known
+
+
+# --- found on the deployed app -----------------------------------------------------------------
+def test_missing_yahoo_info_is_filled_from_the_statements(monkeypatch, tmp_path):
+    """From a shared cloud host Yahoo answers `info` with an almost empty record: the ratios the
+    briefing needs must then be computed from the annual statements and the last close."""
+    from data.connectors import live
+
+    monkeypatch.setattr(live, "CACHE_DIR", str(tmp_path))
+    stmt = {"currency": "INR", "years": [{"end": "2026-03-31", "revenue": 1000.0, "net_income": 200.0,
+                                          "equity": 800.0, "total_debt": 80.0, "eps": 10.0}]}
+    monkeypatch.setattr(live, "fetch_statements", lambda t: stmt)
+    monkeypatch.setattr(live, "fetch_prices", lambda t, period="1y": {"close": [150.0]})
+
+    class FakeTicker:
+        def __init__(self, t):
+            self.info = {"trailingPegRatio": None}
+            self.fast_info = {"market_cap": 5.0e12}
+
+    import sys
+    import types
+    monkeypatch.setitem(sys.modules, "yfinance", types.SimpleNamespace(Ticker=FakeTicker))
+    f = live.fetch_fundamentals("X.NS")
+    assert round(f["roe"], 1) == 25.0 and round(f["profit_margin"], 1) == 20.0
+    assert round(f["debt_to_equity"], 1) == 10.0 and round(f["pe"], 1) == 15.0
+    assert f["market_cap"] == 5.0e12 and "pe" in f["computed_fields"]

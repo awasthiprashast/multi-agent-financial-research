@@ -120,11 +120,55 @@ def fetch_fundamentals(ticker: str) -> Optional[Dict[str, float]]:
             "provenance": "yfinance.info",
             "retrieved": _dt.date.today().isoformat(),
         }
+        # From some hosts (shared cloud servers) Yahoo answers `info` with an almost empty
+        # record. Fill what is missing from the annual statements and the last close.
+        if any(payload[k] is None for k in ("pe", "roe", "profit_margin", "debt_to_equity", "market_cap")):
+            filled = _fill_from_statements(ticker, payload)
+            if filled:
+                payload["provenance"] = "yfinance.info + computed from annual statements"
+                payload["computed_fields"] = filled
         _write_cache(f"fund_{ticker}", payload)
         return payload
     except Exception as exc:
         log.warning("fetch_fundamentals failed: %s: %s", type(exc).__name__, exc)
         return None
+
+
+def _fill_from_statements(ticker: str, payload: dict) -> list:
+    """Compute the headline ratios Yahoo's `info` did not return. Returns the fields filled.
+
+    These are derived, not quoted: ROE, profit margin and debt-to-equity from the latest fiscal
+    year's statements, P/E as the last close over that year's basic EPS, market cap from
+    yfinance's fast_info when it answers."""
+    filled: list = []
+    stm = fetch_statements(ticker)
+    year = (stm or {}).get("years", [None])[0] or {}
+    ni, eq, rev = year.get("net_income"), year.get("equity"), year.get("revenue")
+    if payload.get("roe") is None and ni and eq:
+        payload["roe"] = ni / eq * 100
+        filled.append("roe")
+    if payload.get("profit_margin") is None and ni and rev:
+        payload["profit_margin"] = ni / rev * 100
+        filled.append("profit_margin")
+    if payload.get("debt_to_equity") is None and year.get("total_debt") and eq:
+        payload["debt_to_equity"] = year["total_debt"] / eq * 100
+        filled.append("debt_to_equity")
+    if payload.get("pe") is None and (year.get("eps") or 0) > 0:
+        px = fetch_prices(ticker)
+        if px and px.get("close"):
+            payload["pe"] = px["close"][-1] / year["eps"]
+            filled.append("pe")
+    if payload.get("market_cap") is None:
+        try:
+            import yfinance as yf
+
+            cap = yf.Ticker(ticker).fast_info["market_cap"]
+            if cap and cap == cap:
+                payload["market_cap"] = float(cap)
+                filled.append("market_cap")
+        except Exception as exc:
+            log.info("fast_info market cap unavailable for %s: %s", ticker, exc)
+    return filled
 
 
 _STATEMENT_ROWS = {

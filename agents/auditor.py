@@ -271,6 +271,15 @@ def _plain_direction(desc: str) -> str:
         c, n, a = float(m.group(1)), m.group(2), float(m.group(3))
         return (f"the last close (₹{c:,.2f}) is {'above' if c > a else 'below'} the "
                 f"{n}-day average (₹{a:,.2f})")
+    m = re.match(r"price level: stated ([\d,.\-]+?)[.,]*, last close ([\d.]+)", desc)
+    if m:
+        return (f"the price is quoted near ₹{m.group(1)}, but the last close is "
+                f"₹{float(m.group(2)):,.2f}")
+    m = re.match(r"52-week (high|low): stated ([\d.]+), highest/lowest close ([\d.]+)", desc)
+    if m:
+        return (f"the 52-week {m.group(1)} is quoted as ₹{float(m.group(2)):,.2f}, but the "
+                f"{'highest' if m.group(1) == 'high' else 'lowest'} close in the window is "
+                f"₹{float(m.group(3)):,.2f}")
     m = re.match(r"MACD ([-\d.]+) vs signal ([-\d.]+)", desc)
     if m:
         x, y = float(m.group(1)), float(m.group(2))
@@ -300,8 +309,18 @@ def _explain(s: AuditedSentence, holds) -> None:
         return
     parts: List[str] = []
     fixed = s.text
+    # a stated price level is judged against the last close; the "closest figure" it was
+    # also matched to (some other close in the window) would only confuse
+    levels = [re.match(r"price level: stated ([\d,.\-]+?)[.,]*, last close ([\d.]+)", d)
+              for d in s.directions_contradicted]
+    levels = [m for m in levels if m]
     for n in s.numbers:
         if n.matched:
+            continue
+        stated = n.raw.replace("₹", "").replace(",", "").strip()
+        lv = next((m for m in levels if stated and stated in m.group(1).replace(",", "")), None)
+        if lv is not None:
+            fixed = fixed.replace(n.raw, f"₹{float(lv.group(2)):,.2f}", 1)
             continue
         if n.actual:
             parts.append(f"The data says {n.actual}, not {n.raw}.")
@@ -376,7 +395,9 @@ def _closest_actual(verifier: VerificationAgent, fact: NumericFact, claim_text: 
             return
         dist = abs(cand.normalised - target) / max(abs(target), 1e-9)
         if best is None or dist < best[0]:
-            best = (dist, cand.raw, context)
+            shown = (f"₹{cand.value / 1e5:,.2f} lakh crore"
+                     if cand.unit.lower() in ("cr", "crore") and cand.value >= 1e5 else cand.raw)
+            best = (dist, shown, context)
 
     def scan(text: str, context: str) -> None:
         for cand in extract_numbers(text):
@@ -469,7 +490,8 @@ def audit_text(text: str, pipeline, ticker: Optional[str] = None) -> AuditResult
 
         verdict = verifier.verify(claim)
         evidence = _evidence_rows(store, sent)
-        evidence_texts = [e.text for e in evidence]
+        # "the data says X" must come from structured data, never from a headline's wording
+        evidence_texts = [ch.text for ch in store.chunks.values() if ch.doc_type != "news"]
 
         checks: List[NumberCheck] = []
         unsupported: List[str] = []
@@ -516,6 +538,7 @@ def audit_text(text: str, pipeline, ticker: Optional[str] = None) -> AuditResult
 
         def holds(text: str) -> bool:
             c = Claim.new("external", "audit", text)
+            c.cited_chunk_ids = [cid for cid, ch in verifier.store.chunks.items() if ch.doc_type != "news"]
             _drop_period_labels(c)
             conflicts, confirmed = verifier._logic_check(c)
             v = verifier.verify(c)

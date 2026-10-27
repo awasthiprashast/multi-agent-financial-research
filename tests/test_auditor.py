@@ -187,3 +187,22 @@ def test_a_stated_price_level_is_checked_against_the_last_close(pipe):
 def test_a_condition_is_not_a_claim_about_today(pipe):
     s = _status(pipe, "TCS needs caution until the price stabilises above its 50-day average.")
     assert not s.directions_contradicted
+
+
+def test_roe_is_not_matched_to_volatility_or_debt_to_equity(fpipe):
+    # frozen TCS: ROE 45.6 %, annualised volatility 30.1 %, debt-to-equity 9.8 %
+    s = _status(fpipe, "ROE sits around 30%.")
+    assert s.status == CONTRADICTED and all(n.actual != "30.1%" for n in s.numbers)
+    assert _status(fpipe, "Return on equity, computed as net income over year-end equity, was 45.9%.").status == VERIFIED
+
+
+def test_a_wrong_price_level_is_explained_against_the_last_close_and_corrected(fpipe):
+    r = audit_text("TCS has consolidated near ₹3,800.", fpipe, ticker="TCS.NS").sentences[0]
+    assert r.status == CONTRADICTED
+    assert "last close is ₹2,530" in r.explanation and "stated 3,800" not in r.explanation
+    assert r.correction and "₹2,530.00" in r.correction
+
+
+def test_a_big_market_cap_is_shown_in_lakh_crore(fpipe):
+    r = audit_text("The market cap is roughly ₹1.06 lakh crore.", fpipe, ticker="TCS.NS").sentences[0]
+    assert r.status == CONTRADICTED and "lakh crore" in r.explanation
