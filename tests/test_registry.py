@@ -96,3 +96,12 @@ def test_missing_yahoo_info_is_filled_from_the_statements(monkeypatch, tmp_path)
     assert round(f["roe"], 1) == 25.0 and round(f["profit_margin"], 1) == 20.0
     assert round(f["debt_to_equity"], 1) == 10.0 and round(f["pe"], 1) == 15.0
     assert f["market_cap"] == 5.0e12 and "pe" in f["computed_fields"]
+
+
+def test_a_sparse_cached_fundamentals_record_is_not_reused(monkeypatch, tmp_path):
+    from data.connectors import live
+
+    monkeypatch.setattr(live, "CACHE_DIR", str(tmp_path))
+    live._write_cache("fund_Y.NS", {"pe": None, "roe": None, "profit_margin": None, "market_cap": None})
+    assert not live._has_ratios(live._read_cache("fund_Y.NS"))
+    assert live._has_ratios({"pe": 12.0})

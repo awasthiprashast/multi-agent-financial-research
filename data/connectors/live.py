@@ -104,7 +104,7 @@ def fetch_prices(ticker: str, period: str = "1y") -> Optional[Dict[str, list]]:
 def fetch_fundamentals(ticker: str) -> Optional[Dict[str, float]]:
     """Headline fundamentals via yfinance `info` (free, no key)."""
     cached = _read_cache(f"fund_{ticker}")
-    if cached:
+    if cached and _has_ratios(cached):          # a sparse record cached earlier is not reused
         return cached
     try:
         import yfinance as yf
@@ -127,11 +127,16 @@ def fetch_fundamentals(ticker: str) -> Optional[Dict[str, float]]:
             if filled:
                 payload["provenance"] = "yfinance.info + computed from annual statements"
                 payload["computed_fields"] = filled
-        _write_cache(f"fund_{ticker}", payload)
+        if _has_ratios(payload):
+            _write_cache(f"fund_{ticker}", payload)
         return payload
     except Exception as exc:
         log.warning("fetch_fundamentals failed: %s: %s", type(exc).__name__, exc)
         return None
+
+
+def _has_ratios(payload: dict) -> bool:
+    return any(payload.get(k) is not None for k in ("pe", "roe", "profit_margin", "market_cap"))
 
 
 def _fill_from_statements(ticker: str, payload: dict) -> list:
