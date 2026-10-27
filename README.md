@@ -30,7 +30,38 @@ verified the same way. The auditor is that verifier pointed at text somebody els
 Use it three ways: the Streamlit app (**Audit a text** tab), `POST /audit` on the API, or
 `from agents.auditor import audit_text`.
 
+**Live demo:** <https://multi-agent-financial-research.streamlit.app> (free hosting: it sleeps after
+a while without visitors and takes about a minute to wake; the first load of a company can take
+up to 30 seconds).
+
 > Academic prototype. Not investment advice.
+
+---
+
+## Screenshots
+
+Taken from the deployed app.
+
+**Company briefing**: key figures, then a plain-English summary in which every sentence was checked
+against the data first.
+
+![Company briefing](docs/screenshots/1-briefing.jpg)
+![Briefing summary](docs/screenshots/2-briefing-summary.jpg)
+
+**Fact-check a text**: paste any paragraph; each sentence is marked correct, wrong, not confirmed or
+not checkable, with the real figure and a corrected version.
+
+![Fact-check input](docs/screenshots/3-factcheck-input.jpg)
+![Fact-check verdicts](docs/screenshots/4-factcheck-verdicts.jpg)
+
+**Chatbot vs the data**: a chatbot answers freely; the verifier checks every figure in its answer.
+
+![Chatbot vs the data](docs/screenshots/5-chatbot-vs-data.jpg)
+
+**How accurate is it?**: measured results, with the held-out set and the limits stated.
+
+![Accuracy, held-out result](docs/screenshots/6-accuracy-heldout.jpg)
+![Accuracy table](docs/screenshots/7-accuracy-table.jpg)
 
 ---
 
